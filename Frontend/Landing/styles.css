@@ -360,3 +360,69 @@ body {
 .add-btn:hover {
   background-color: rgb(35, 56, 119);
 }
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-shell {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-panel {
+  background-color: white;
+  border: 1px solid whitesmoke;
+  border-radius: 16px;
+  padding: 28px;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.login-panel h1 {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.login-form label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.login-form input {
+  border: 1px solid #D7DCE2;
+  border-radius: 10px;
+  color: #1F2937;
+  font-size: 15px;
+  padding: 11px 12px;
+}
+
+.login-form input:focus {
+  border-color: rgb(46, 74, 159);
+  outline: none;
+}
+
+.login-message {
+  min-height: 20px;
+  color: #9B2C2C;
+  font-size: 14px;
+}
+
+.login-btn {
+  margin-top: 0;
+}
