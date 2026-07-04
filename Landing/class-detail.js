@@ -1,7 +1,4 @@
-// Class data - in a real app this would come from a shared source/backend.
-// Note: no "average" field here anymore - it's calculated live from assignments
-// using calculateAverage() from utils.js, so it always reflects current grades.
-const classes = {
+const classData = {
   "calc-bc": { name: "AP Calculus BC", period: "Period 1", assignments: [
     { title: "Unit 6 Free Response Practice", due: "Jun 20", grade: 95 },
     { title: "Parametric Equations Quiz", due: "Jun 25", grade: 92 },
@@ -25,39 +22,35 @@ const classes = {
   ]},
 };
 
-// Get class id from the URL (e.g. class-detail.html?id=calc-bc)
 const params = new URLSearchParams(window.location.search);
-const classId = params.get('id') || Object.keys(classes)[0];
-const cls = classes[classId];
+const classId = params.get('id') || Object.keys(classData)[0];
+const cls = classData[classId];
 
-// calculateAverage and formatGradePercent come from utils.js (loaded before this script)
-const average = calculateAverage(cls.assignments);
+const avg = getClassAverage(cls.assignments);
 
-document.getElementById('class-name').textContent = cls.name;
-document.getElementById('class-period').textContent = cls.period;
-document.getElementById('class-average').textContent = formatGradePercent(average);
+document.getElementById('class-title').textContent = cls.name;
+document.getElementById('time-label').textContent = cls.period;
+document.getElementById('grade-value').textContent = gradeLabel(avg);
 
-const list = document.getElementById('assignment-list');
+const list = document.getElementById('assignments-list');
 
 cls.assignments.forEach(a => {
-  const item = document.createElement('li');
-  item.className = 'assignment-item';
+  const row = document.createElement('li');
+  row.className = 'assignment-row';
 
-  const gradeLabel = formatGradePercent(a.grade);
-  const gradeClass = (a.grade !== null && a.grade !== undefined) ? 'graded' : 'ungraded';
+  const isGraded = a.grade !== null && a.grade !== undefined;
 
-  item.innerHTML = `
-    <div class="assignment-info">
-      <span class="assignment-title">${a.title}</span>
-      <span class="assignment-due">Due ${a.due}</span>
+  row.innerHTML = `
+    <div class="assignment-meta">
+      <span class="assignment-name">${a.title}</span>
+      <span class="due-date">Due ${a.due}</span>
     </div>
-    <span class="assignment-grade ${gradeClass}">${gradeLabel}</span>
+    <span class="grade-tag ${isGraded ? 'graded' : 'ungraded'}">${gradeLabel(a.grade)}</span>
   `;
 
-  list.appendChild(item);
+  list.appendChild(row);
 });
 
-// Placeholder for future "add assignment" functionality
-document.getElementById('add-assignment-btn').addEventListener('click', () => {
+document.getElementById('add-btn').addEventListener('click', () => {
   alert('Add Assignment form goes here — build in a future task.');
 });

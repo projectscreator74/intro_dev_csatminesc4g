@@ -1,5 +1,4 @@
-// Sample class data - replace with real data later
-const classes = [
+const classList = [
   { id: "calc-bc", name: "AP Calculus BC", period: "Period 1", average: 94 },
   { id: "french", name: "AP French", period: "Period 2", average: 88 },
   { id: "cs-a", name: "AP Computer Science A", period: "Period 3", average: 97 },
@@ -7,20 +6,20 @@ const classes = [
   { id: "chem", name: "Honors Chemistry", period: "Period 5", average: 85 },
 ];
 
-const classGrid = document.getElementById('class-grid');
+const grid = document.getElementById('classes-grid');
 
-classes.forEach(cls => {
-  const card = document.createElement('a');
-  card.href = `class-detail.html?id=${cls.id}`;
-  card.className = 'class-card';
+classList.forEach(cls => {
+  const tile = document.createElement('a');
+  tile.href = `class-detail.html?id=${cls.id}`;
+  tile.className = 'class-tile';
 
-  card.innerHTML = `
-    <div class="class-card-top">
+  tile.innerHTML = `
+    <div class="class-tile-top">
       <h3>${cls.name}</h3>
-      <span class="grade-pill">${cls.average}%</span>
+      <span class="grade-badge">${cls.average}%</span>
     </div>
-    <p class="class-period">${cls.period}</p>
+    <p class="class-time">${cls.period}</p>
   `;
 
-  classGrid.appendChild(card);
+  grid.appendChild(tile);
 });

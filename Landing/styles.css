@@ -7,117 +7,114 @@
 
 body {
   background-color: #F7F8FA;
-  color: #1B3A5C;
+  color: rgb(46, 74, 159);
 }
 
-/* Top bar */
-.topbar {
+.navbar {
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 16px 24px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #E0E4E8;
+  background-color: white;
+  border-bottom: 1px solid whitesmoke;
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
-.icon-btn {
+.btn-icon {
   background: none;
   border: none;
   cursor: pointer;
   font-size: 18px;
-  color: #1B3A5C;
+  color: rgb(46, 74, 159);
   padding: 6px 10px;
   border-radius: 8px;
   transition: background-color 0.15s ease;
 }
 
-.icon-btn:hover {
-  background-color: #EEF2F6;
+.btn-icon:hover {
+  background-color: whitesmoke;
 }
 
-.arrow {
+.nav-arrow {
   display: inline-block;
   transition: transform 0.25s ease;
 }
 
-.arrow.open {
+.nav-arrow.open {
   transform: rotate(90deg);
 }
 
-.logo-link {
+.logo-wrap {
   display: flex;
   align-items: center;
   gap: 8px;
   text-decoration: none;
 }
 
-.logo-mark {
+.logo-badge {
   width: 32px;
   height: 32px;
-  background-color: #1B3A5C;
+  background-color: royalblue;
   color: white;
   font-weight: bold;
-  border-radius: 8px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.logo-text {
+.logo-name {
   font-size: 18px;
   font-weight: 600;
-  color: #1B3A5C;
+  color: rgb(46, 74, 159);
 }
 
-/* Sidebar */
-.sidebar {
+.side-menu {
   position: fixed;
   top: 0;
   left: -260px;
   width: 240px;
   height: 100%;
-  background-color: #ffffff;
-  border-right: 1px solid #E0E4E8;
+  background-color: white;
+  border-right: 1px solid whitesmoke;
   padding: 80px 16px 16px;
   transition: left 0.25s ease;
   z-index: 20;
 }
 
-.sidebar.open {
+.side-menu.open {
   left: 0;
 }
 
-.sidebar ul {
+.side-menu ul {
   list-style: none;
 }
 
-.sidebar li {
+.side-menu li {
   margin-bottom: 8px;
 }
 
-.sidebar a {
+.side-menu a {
   display: block;
   padding: 10px 14px;
   border-radius: 8px;
   text-decoration: none;
-  color: #1B3A5C;
+  color: rgb(46, 74, 159);
   font-size: 15px;
 }
 
-.sidebar a:hover {
-  background-color: #EEF2F6;
+.side-menu a:hover {
+  background-color: whitesmoke;
 }
 
-.sidebar a.active {
-  background-color: #1B3A5C;
-  color: #ffffff;
+.side-menu a.active {
+  background-color: rgb(46, 74, 159);
+  color: whitesmoke;
 }
 
-/* Overlay */
-.overlay {
+.backdrop {
   display: none;
   position: fixed;
   top: 0;
@@ -128,111 +125,114 @@ body {
   z-index: 15;
 }
 
-.overlay.visible {
+.backdrop.visible {
   display: block;
 }
 
-/* Main content */
-.main-content {
+.page-content {
   max-width: 720px;
   margin: 0 auto;
   padding: 40px 24px;
 }
 
-.main-content h1 {
+.page-content h1 {
   font-size: 28px;
   margin-bottom: 4px;
 }
 
 .subtitle {
-  color: #5C6B7A;
+  color: #566472;
   margin-bottom: 32px;
 }
 
-/* Calendar box - rounded */
-.calendar-box {
-  background-color: #ffffff;
+.calendar-card {
+  background-color: white;
   border-radius: 16px;
-  border: 1px solid #E0E4E8;
+  border: 1px solid whitesmoke;
   padding: 24px;
 }
 
-.calendar-header {
+.calendar-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
 }
 
-.calendar-header h2 {
+.calendar-top h2 {
   font-size: 18px;
 }
 
-.calendar-nav {
+.calendar-controls {
   display: flex;
   gap: 8px;
 }
 
-.calendar-grid {
+.calendar-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 6px;
   text-align: center;
 }
 
-.calendar-grid .day-label {
+.calendar-days .day-name {
   font-size: 12px;
   color: #8B97A3;
   font-weight: 600;
   padding-bottom: 8px;
 }
 
-.calendar-grid .day-cell {
+.calendar-days .day {
   padding: 10px 0;
   border-radius: 10px;
   font-size: 14px;
   cursor: pointer;
 }
 
-.calendar-grid .day-cell:hover {
-  background-color: #EEF2F6;
+.calendar-days .day:hover {
+  background-color: whitesmoke;
 }
 
-.calendar-grid .day-cell.empty {
+.calendar-days .day.blank {
   cursor: default;
 }
 
-.calendar-grid .day-cell.today {
-  background-color: #1B3A5C;
+.calendar-days .day.today {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background-color: rgb(46, 74, 159);
   color: white;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
 
-/* ---------- Classes list page ---------- */
-
-.class-grid {
+.classes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
 }
 
-.class-card {
+.class-tile {
   display: block;
-  background-color: #ffffff;
+  background-color: white;
   border-radius: 16px;
-  border: 1px solid #E0E4E8;
+  border: 1px solid whitesmoke;
   padding: 20px;
   text-decoration: none;
-  color: #1B3A5C;
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  color: rgb(46, 74, 159);
+  transition: border-color 0.15s ease;
 }
 
-.class-card:hover {
-  box-shadow: 0 4px 12px rgba(27, 58, 92, 0.08);
-  transform: translateY(-2px);
+.class-tile:hover {
+  border-color: rgb(46, 74, 159);
 }
 
-.class-card-top {
+.class-tile-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -240,17 +240,17 @@ body {
   margin-bottom: 6px;
 }
 
-.class-card-top h3 {
+.class-tile-top h3 {
   font-size: 16px;
   font-weight: 600;
 }
 
-.class-period {
+.class-time {
   font-size: 13px;
-  color: #5C6B7A;
+  color: #566472;
 }
 
-.grade-pill {
+.grade-badge {
   background-color: #EAF4EC;
   color: #2E7D46;
   font-size: 13px;
@@ -260,9 +260,7 @@ body {
   white-space: nowrap;
 }
 
-/* ---------- Class detail page ---------- */
-
-.back-link {
+.back-btn {
   display: inline-block;
   color: #5C6B7A;
   text-decoration: none;
@@ -270,86 +268,86 @@ body {
   margin-bottom: 20px;
 }
 
-.back-link:hover {
-  color: #1B3A5C;
+.back-btn:hover {
+  color: rgb(46, 74, 159);
 }
 
-.class-detail-header {
+.detail-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 4px;
 }
 
-.class-detail-header h1 {
+.detail-top h1 {
   font-size: 26px;
 }
 
-.assignments-box {
-  background-color: #ffffff;
+.assignments-card {
+  background-color: white;
   border-radius: 16px;
-  border: 1px solid #E0E4E8;
+  border: 1px solid whitesmoke;
   padding: 24px;
   margin-top: 24px;
 }
 
-.assignments-box h2 {
+.assignments-card h2 {
   font-size: 17px;
   margin-bottom: 16px;
 }
 
-.assignment-list {
+.assignments {
   list-style: none;
 }
 
-.assignment-item {
+.assignment-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #EEF2F6;
+  border-bottom: 1px solid whitesmoke;
 }
 
-.assignment-item:last-child {
+.assignment-row:last-child {
   border-bottom: none;
 }
 
-.assignment-info {
+.assignment-meta {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.assignment-title {
+.assignment-name {
   font-size: 14px;
   font-weight: 500;
 }
 
-.assignment-due {
+.due-date {
   font-size: 12px;
   color: #8B97A3;
 }
 
-.assignment-grade {
+.grade-tag {
   font-size: 13px;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 999px;
 }
 
-.assignment-grade.graded {
+.grade-tag.graded {
   background-color: #EAF4EC;
   color: #2E7D46;
 }
 
-.assignment-grade.ungraded {
+.grade-tag.ungraded {
   background-color: #F2F0E8;
   color: #8A7A2E;
 }
 
-.add-assignment-btn {
+.add-btn {
   margin-top: 16px;
-  background-color: #1B3A5C;
+  background-color: rgb(46, 74, 159);
   color: white;
   border: none;
   padding: 10px 16px;
@@ -359,6 +357,6 @@ body {
   cursor: pointer;
 }
 
-.add-assignment-btn:hover {
-  background-color: #14314F;
+.add-btn:hover {
+  background-color: rgb(35, 56, 119);
 }

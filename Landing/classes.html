@@ -8,21 +8,19 @@
 </head>
 <body>
 
-  <!-- Top bar with logo and sidebar toggle -->
-  <header class="topbar">
-    <button id="sidebar-toggle" class="icon-btn" aria-label="Open menu">
-      <span class="arrow">&#9654;</span>
+  <header class="navbar">
+    <button id="menu-toggle" class="btn-icon" aria-label="Open menu">
+      <span class="nav-arrow">&#9654;</span>
     </button>
     <div class="logo">
-      <a href="index.html" class="logo-link">
-        <span class="logo-mark">S</span>
-        <span class="logo-text">StudyStack</span>
+      <a href="index.html" class="logo-wrap">
+        <span class="logo-badge">S</span>
+        <span class="logo-name">StudyStack</span>
       </a>
     </div>
   </header>
 
-  <!-- Sidebar -->
-  <nav id="sidebar" class="sidebar">
+  <nav id="side-menu" class="side-menu">
     <ul>
       <li><a href="index.html">Dashboard</a></li>
       <li><a href="classes.html" class="active">Classes</a></li>
@@ -32,20 +30,17 @@
     </ul>
   </nav>
 
-  <div id="overlay" class="overlay"></div>
+  <div id="backdrop" class="backdrop"></div>
 
-  <!-- Main content -->
-  <main class="main-content">
+  <main class="page-content">
     <h1>Your Classes</h1>
     <p class="subtitle">Tap a class to view assignments and grades.</p>
 
-    <div class="class-grid" id="class-grid">
-      <!-- Class cards populated by JS -->
-    </div>
+    <div class="classes-grid" id="classes-grid"></div>
   </main>
 
   <script src="utils.js"></script>
-  <script src="classes.js"></script>
   <script src="sidebar.js"></script>
+  <script src="classes.js"></script>
 </body>
 </html>

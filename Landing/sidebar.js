@@ -1,27 +1,22 @@
-// Sidebar toggle - shared across all pages
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('overlay');
-const toggleBtn = document.getElementById('sidebar-toggle');
-const arrow = toggleBtn.querySelector('.arrow');
+const sideMenu = document.getElementById('side-menu');
+const backdrop = document.getElementById('backdrop');
+const menuToggle = document.getElementById('menu-toggle');
+const arrowIcon = menuToggle.querySelector('.nav-arrow');
 
-function openSidebar() {
-  sidebar.classList.add('open');
-  overlay.classList.add('visible');
-  arrow.classList.add('open');
+function openMenu() {
+  sideMenu.classList.add('open');
+  backdrop.classList.add('visible');
+  arrowIcon.classList.add('open');
 }
 
-function closeSidebar() {
-  sidebar.classList.remove('open');
-  overlay.classList.remove('visible');
-  arrow.classList.remove('open');
+function closeMenu() {
+  sideMenu.classList.remove('open');
+  backdrop.classList.remove('visible');
+  arrowIcon.classList.remove('open');
 }
 
-toggleBtn.addEventListener('click', () => {
-  if (sidebar.classList.contains('open')) {
-    closeSidebar();
-  } else {
-    openSidebar();
-  }
+menuToggle.addEventListener('click', () => {
+  sideMenu.classList.contains('open') ? closeMenu() : openMenu();
 });
 
-overlay.addEventListener('click', closeSidebar);
+backdrop.addEventListener('click', closeMenu);
