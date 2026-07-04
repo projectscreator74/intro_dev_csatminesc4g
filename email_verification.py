@@ -1,5 +1,6 @@
 from flask import Flask
 from flask import request
+from send_verification import send_verification_email
 import json
 import random
 import time
@@ -21,7 +22,7 @@ def start_verification():
 def create_verification_code(email):
     code = f"{random.randint(0, 999999):06d}"
     verification_data[email] = {"code": code, "expiration": time.time() + CODE_EXPIRATION_TIME, "attempts": 0}
-
+    send_verification_email(email, code)
     return f"code sent: {code}"
 
 @app.route("/send_code", methods=["POST"])
