@@ -20,7 +20,7 @@ def start_verification():
 
 def create_verification_code(email):
     code = f"{random.randint(0, 999999):06d}"
-    verification_data[email] = {"code": code, "expiration": time.time() + CODE_EXPIRATION_TIME}
+    verification_data[email] = {"code": code, "expiration": time.time() + CODE_EXPIRATION_TIME, "attempts": 0}
 
     return f"code sent: {code}"
 
@@ -49,10 +49,14 @@ def check_code(email, submitted_code):
 
     stored = verification_data[email]
 
+    if stored["attempts"] >= 5:
+        return "too_many_attempts"
+
     if time.time() > stored["expiration"]:
         return "expired"
 
     if submitted_code != stored["code"]:
+        stored["attempts"] += 1
         return "wrong_code"
 
     return "success"
