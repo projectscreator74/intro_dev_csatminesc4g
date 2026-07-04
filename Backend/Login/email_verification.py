@@ -1,6 +1,6 @@
 from flask import Flask
 from flask import request
-from send_verification import send_verification_email
+from Backend.Login.send_verification import send_verification_email
 import json
 import random
 import time
