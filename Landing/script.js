@@ -1,0 +1,66 @@
+const monthTitle = document.getElementById('month-title');
+const daysContainer = document.getElementById('calendar-days');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+
+const monthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
+const today = new Date();
+let currentYear = today.getFullYear();
+let currentMonth = today.getMonth();
+
+function buildCalendar(year, month) {
+  monthTitle.textContent = `${monthNames[month]} ${year}`;
+  daysContainer.innerHTML = "";
+
+  ["S", "M", "T", "W", "T", "F", "S"].forEach(label => {
+    const nameEl = document.createElement('div');
+    nameEl.className = 'day-name';
+    nameEl.textContent = label;
+    daysContainer.appendChild(nameEl);
+  });
+
+  const firstWeekday = new Date(year, month, 1).getDay();
+  const totalDays = daysInMonth(year, month);
+
+  for (let i = 0; i < firstWeekday; i++) {
+    const blank = document.createElement('div');
+    blank.className = 'day blank';
+    daysContainer.appendChild(blank);
+  }
+
+  for (let day = 1; day <= totalDays; day++) {
+    const cell = document.createElement('div');
+    cell.className = 'day';
+    cell.textContent = day;
+
+    if (isSameDate(day, month, year, today)) {
+      cell.classList.add('today');
+    }
+
+    daysContainer.appendChild(cell);
+  }
+}
+
+prevBtn.addEventListener('click', () => {
+  currentMonth--;
+  if (currentMonth < 0) {
+    currentMonth = 11;
+    currentYear--;
+  }
+  buildCalendar(currentYear, currentMonth);
+});
+
+nextBtn.addEventListener('click', () => {
+  currentMonth++;
+  if (currentMonth > 11) {
+    currentMonth = 0;
+    currentYear++;
+  }
+  buildCalendar(currentYear, currentMonth);
+});
+
+buildCalendar(currentYear, currentMonth);

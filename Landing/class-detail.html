@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyStack — Class Detail</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="navbar">
+    <button id="menu-toggle" class="btn-icon" aria-label="Open menu">
+      <span class="nav-arrow">&#9654;</span>
+    </button>
+    <div class="logo">
+      <a href="index.html" class="logo-wrap">
+        <span class="logo-badge">S</span>
+        <span class="logo-name">StudyStack</span>
+      </a>
+    </div>
+  </header>
+
+  <nav id="side-menu" class="side-menu">
+    <ul>
+      <li><a href="index.html">Dashboard</a></li>
+      <li><a href="classes.html" class="active">Classes</a></li>
+      <li><a href="#">Assignments</a></li>
+      <li><a href="#">Grades</a></li>
+      <li><a href="#">Settings</a></li>
+    </ul>
+  </nav>
+
+  <div id="backdrop" class="backdrop"></div>
+
+  <main class="page-content">
+    <a href="classes.html" class="back-btn">&#8249; Back to Classes</a>
+
+    <div class="detail-top">
+      <h1 id="class-title">Class Name</h1>
+      <span class="grade-badge" id="grade-value">-- %</span>
+    </div>
+    <p class="subtitle" id="time-label">Period —</p>
+
+    <section class="assignments-card">
+      <h2>Assignments</h2>
+      <ul class="assignments" id="assignments-list"></ul>
+      <button class="add-btn" id="add-btn">+ Add Assignment</button>
+    </section>
+  </main>
+
+  <script src="utils.js"></script>
+  <script src="sidebar.js"></script>
+  <script src="class-detail.js"></script>
+</body>
+</html>
