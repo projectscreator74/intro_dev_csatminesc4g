@@ -1,0 +1,364 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body {
+  background-color: #F7F8FA;
+  color: #1B3A5C;
+}
+
+/* Top bar */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #E0E4E8;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #1B3A5C;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background-color 0.15s ease;
+}
+
+.icon-btn:hover {
+  background-color: #EEF2F6;
+}
+
+.arrow {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.arrow.open {
+  transform: rotate(90deg);
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.logo-mark {
+  width: 32px;
+  height: 32px;
+  background-color: #1B3A5C;
+  color: white;
+  font-weight: bold;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1B3A5C;
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -260px;
+  width: 240px;
+  height: 100%;
+  background-color: #ffffff;
+  border-right: 1px solid #E0E4E8;
+  padding: 80px 16px 16px;
+  transition: left 0.25s ease;
+  z-index: 20;
+}
+
+.sidebar.open {
+  left: 0;
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar li {
+  margin-bottom: 8px;
+}
+
+.sidebar a {
+  display: block;
+  padding: 10px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #1B3A5C;
+  font-size: 15px;
+}
+
+.sidebar a:hover {
+  background-color: #EEF2F6;
+}
+
+.sidebar a.active {
+  background-color: #1B3A5C;
+  color: #ffffff;
+}
+
+/* Overlay */
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 15;
+}
+
+.overlay.visible {
+  display: block;
+}
+
+/* Main content */
+.main-content {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.main-content h1 {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  color: #5C6B7A;
+  margin-bottom: 32px;
+}
+
+/* Calendar box - rounded */
+.calendar-box {
+  background-color: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #E0E4E8;
+  padding: 24px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.calendar-header h2 {
+  font-size: 18px;
+}
+
+.calendar-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  text-align: center;
+}
+
+.calendar-grid .day-label {
+  font-size: 12px;
+  color: #8B97A3;
+  font-weight: 600;
+  padding-bottom: 8px;
+}
+
+.calendar-grid .day-cell {
+  padding: 10px 0;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.calendar-grid .day-cell:hover {
+  background-color: #EEF2F6;
+}
+
+.calendar-grid .day-cell.empty {
+  cursor: default;
+}
+
+.calendar-grid .day-cell.today {
+  background-color: #1B3A5C;
+  color: white;
+  font-weight: 600;
+}
+
+/* ---------- Classes list page ---------- */
+
+.class-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.class-card {
+  display: block;
+  background-color: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #E0E4E8;
+  padding: 20px;
+  text-decoration: none;
+  color: #1B3A5C;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.class-card:hover {
+  box-shadow: 0 4px 12px rgba(27, 58, 92, 0.08);
+  transform: translateY(-2px);
+}
+
+.class-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.class-card-top h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.class-period {
+  font-size: 13px;
+  color: #5C6B7A;
+}
+
+.grade-pill {
+  background-color: #EAF4EC;
+  color: #2E7D46;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* ---------- Class detail page ---------- */
+
+.back-link {
+  display: inline-block;
+  color: #5C6B7A;
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.back-link:hover {
+  color: #1B3A5C;
+}
+
+.class-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.class-detail-header h1 {
+  font-size: 26px;
+}
+
+.assignments-box {
+  background-color: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #E0E4E8;
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.assignments-box h2 {
+  font-size: 17px;
+  margin-bottom: 16px;
+}
+
+.assignment-list {
+  list-style: none;
+}
+
+.assignment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #EEF2F6;
+}
+
+.assignment-item:last-child {
+  border-bottom: none;
+}
+
+.assignment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.assignment-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.assignment-due {
+  font-size: 12px;
+  color: #8B97A3;
+}
+
+.assignment-grade {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.assignment-grade.graded {
+  background-color: #EAF4EC;
+  color: #2E7D46;
+}
+
+.assignment-grade.ungraded {
+  background-color: #F2F0E8;
+  color: #8A7A2E;
+}
+
+.add-assignment-btn {
+  margin-top: 16px;
+  background-color: #1B3A5C;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add-assignment-btn:hover {
+  background-color: #14314F;
+}
