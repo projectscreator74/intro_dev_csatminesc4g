@@ -15,5 +15,3 @@ def send_verification_email(to_email, code):
         server.starttls()
         server.login(SMTP_LOGIN, SMTP_PASSWORD)
         server.sendmail(SENDER_EMAIL, to_email, msg.as_string())
-
-send_verification_email("studystack@gmail.com", "123457")
