@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>StudyStack Goals and Files</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background-color: #eeeeee;
+    }
+
+    .page {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 200px;
+      background-color: #bbbbbb;
+      padding: 20px;
+    }
+
+    .logo {
+      background-color: #dddddd;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .nav {
+      background-color: #dddddd;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .selected {
+      background-color: #899cff;
+    }
+
+    .main {
+      flex: 1;
+      padding: 25px;
+    }
+
+    .big-box {
+      background-color: #b5b5b5;
+      border-radius: 35px;
+      padding: 25px;
+      display: flex;
+      gap: 25px;
+    }
+
+    .panel {
+      background-color: #0737b8;
+      color: white;
+      border-radius: 30px;
+      padding: 25px;
+      width: 50%;
+      min-height: 450px;
+    }
+
+    .panel h2 {
+      text-align: center;
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      margin: 3px;
+    }
+
+    .gray-button {
+      background-color: #d1d1d1;
+    }
+
+    .item {
+      background-color: rgba(255, 255, 255, 0.15);
+      padding: 15px;
+      border-radius: 15px;
+      margin-bottom: 15px;
+    }
+
+    .edit {
+      background-color: #cfe3ff;
+    }
+
+    .complete {
+      background-color: #c9ffd4;
+    }
+
+    .delete {
+      background-color: #ffcccc;
+    }
+
+    .form-box {
+      display: none;
+      background-color: white;
+      color: black;
+      padding: 20px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 12px;
+    }
+
+    @media screen and (max-width: 800px) {
+      .page {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: auto;
+      }
+
+      .big-box {
+        flex-direction: column;
+      }
+
+      .panel {
+        width: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="sidebar">
+      <div class="logo">StudyStack</div>
+      <div class="nav">Dashboard</div>
+      <div class="nav">Assignments</div>
+      <div class="nav">Calendar</div>
+      <div class="nav selected">Goals and Files</div>
+      <div class="nav">Notifications</div>
+      <div class="nav">Settings</div>
+    </div>
+
+    <div class="main">
+      <h1>Goals and Files</h1>
+
+      <div class="big-box">
+        <div class="panel">
+          <div class="top-row">
+            <h2>Your Goals</h2>
+            <button class="gray-button" onclick="showGoalForm()">Add Goal</button>
+          </div>
+
+          <div class="form-box" id="goalForm">
+            <h3>Add / Edit Goal</h3>
+
+            <label>Goal Title</label>
+            <input id="goalTitle">
+
+            <label>Due Date</label>
+            <input id="goalDate" type="date">
+
+            <label>Notes</label>
+            <textarea id="goalNotes"></textarea>
+
+            <label>Status</label>
+            <select id="goalStatus">
+              <option>Not Started</option>
+              <option>In Progress</option>
+              <option>Completed</option>
+            </select>
+
+            <button onclick="saveGoal()">Save</button>
+            <button onclick="hideGoalForm()">Cancel</button>
+          </div>
+
+          <div id="goalList"></div>
+        </div>
+
+        <div class="panel">
+          <div class="top-row">
+            <h2>Your Documents</h2>
+            <button class="gray-button" onclick="showDocumentForm()">Upload</button>
+          </div>
+
+          <div class="form-box" id="documentForm">
+            <h3>Upload / Rename Document</h3>
+
+            <label>File Name</label>
+            <input id="documentName">
+
+            <label>File Type</label>
+            <input id="documentType" placeholder="PDF, PNG, DOCX">
+
+            <label>Category</label>
+            <select id="documentCategory">
+              <option>Resume</option>
+              <option>School project</option>
+              <option>Certificate</option>
+              <option>College essay</option>
+              <option>Job application</option>
+              <option>Volunteer document</option>
+            </select>
+
+            <button onclick="saveDocument()">Save</button>
+            <button onclick="hideDocumentForm()">Cancel</button>
+          </div>
+
+          <div id="documentList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var goals = [
+      {
+        title: "Learn Python",
+        date: "2026-05-30",
+        notes: "Practice coding",
+        status: "In Progress"
+      },
+      {
+        title: "Finish a college resume",
+        date: "2026-06-10",
+        notes: "Add clubs and awards",
+        status: "Not Started"
+      }
+    ];
+
+    var documents = [
+      {
+        name: "Resume",
+        type: "PDF",
+        category: "Resume",
+        date: "2026-05-01"
+      },
+      {
+        name: "Volunteer Certificate",
+        type: "JPG",
+        category: "Certificate",
+        date: "2026-05-09"
+      }
+    ];
+
+    var editingGoal = -1;
+    var editingDocument = -1;
+
+    function showGoals() {
+      var list = document.getElementById("goalList");
+      list.innerHTML = "";
+
+      for (var i = 0; i < goals.length; i++) {
+        list.innerHTML += `
+          <div class="item">
+            <h3>${goals[i].title}</h3>
+            <p>Due Date: ${goals[i].date}</p>
+            <p>Notes: ${goals[i].notes}</p>
+            <p>Status: ${goals[i].status}</p>
+
+            <button class="edit" onclick="editGoal(${i})">Edit</button>
+            <button class="complete" onclick="completeGoal(${i})">Complete</button>
+            <button class="delete" onclick="deleteGoal(${i})">Delete</button>
+          </div>
+        `;
+      }
+    }
+
+    function showDocuments() {
+      var list = document.getElementById("documentList");
+      list.innerHTML = "";
+
+      for (var i = 0; i < documents.length; i++) {
+        list.innerHTML += `
+          <div class="item">
+            <h3>${documents[i].name}</h3>
+            <p>Type: ${documents[i].type}</p>
+            <p>Category: ${documents[i].category}</p>
+            <p>Uploaded: ${documents[i].date}</p>
+
+            <button class="edit" onclick="alert('Opening file...')">Open</button>
+            <button class="complete" onclick="editDocument(${i})">Rename</button>
+            <button class="delete" onclick="deleteDocument(${i})">Delete</button>
+          </div>
+        `;
+      }
+    }
+
+    function showGoalForm() {
+      editingGoal = -1;
+      document.getElementById("goalForm").style.display = "block";
+    }
+
+    function hideGoalForm() {
+      document.getElementById("goalForm").style.display = "none";
+    }
+
+    function saveGoal() {
+      var newGoal = {
+        title: document.getElementById("goalTitle").value,
+        date: document.getElementById("goalDate").value,
+        notes: document.getElementById("goalNotes").value,
+        status: document.getElementById("goalStatus").value
+      };
+
+      if (editingGoal == -1) {
+        goals.push(newGoal);
+      } else {
+        goals[editingGoal] = newGoal;
+      }
+
+      hideGoalForm();
+      showGoals();
+    }
+
+    function editGoal(index) {
+      editingGoal = index;
+
+      document.getElementById("goalTitle").value = goals[index].title;
+      document.getElementById("goalDate").value = goals[index].date;
+      document.getElementById("goalNotes").value = goals[index].notes;
+      document.getElementById("goalStatus").value = goals[index].status;
+
+      document.getElementById("goalForm").style.display = "block";
+    }
+
+    function completeGoal(index) {
+      goals[index].status = "Completed";
+      showGoals();
+    }
+
+    function deleteGoal(index) {
+      goals.splice(index, 1);
+      showGoals();
+    }
+
+    function showDocumentForm() {
+      editingDocument = -1;
+      document.getElementById("documentForm").style.display = "block";
+    }
+
+    function hideDocumentForm() {
+      document.getElementById("documentForm").style.display = "none";
+    }
+
+    function saveDocument() {
+      var newDocument = {
+        name: document.getElementById("documentName").value,
+        type: document.getElementById("documentType").value,
+        category: document.getElementById("documentCategory").value,
+        date: "2026-06-30"
+      };
+
+      if (editingDocument == -1) {
+        documents.push(newDocument);
+      } else {
+        documents[editingDocument] = newDocument;
+      }
+
+      hideDocumentForm();
+      showDocuments();
+    }
+
+    function editDocument(index) {
+      editingDocument = index;
+
+      document.getElementById("documentName").value = documents[index].name;
+      document.getElementById("documentType").value = documents[index].type;
+      document.getElementById("documentCategory").value = documents[index].category;
+
+      document.getElementById("documentForm").style.display = "block";
+    }
+
+    function deleteDocument(index) {
+      documents.splice(index, 1);
+      showDocuments();
+    }
+
+    showGoals();
+    showDocuments();
+  </script>
+</body>
+</html>

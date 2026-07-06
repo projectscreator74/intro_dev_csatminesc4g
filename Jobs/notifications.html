@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>StudyStack Notifications</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background-color: #eeeeee;
+      padding: 30px;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .bell-button {
+      background-color: red;
+      border: none;
+      border-radius: 14px;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .notification-box {
+      display: none;
+      background-color: white;
+      border-radius: 20px;
+      padding: 20px;
+      width: 380px;
+      margin-top: 15px;
+      margin-left: auto;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .notification {
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-left: 8px solid gray;
+    }
+
+    .red {
+      background-color: #ffe1e1;
+      border-left-color: red;
+    }
+
+    .orange {
+      background-color: #fff0d6;
+      border-left-color: orange;
+    }
+
+    .blue {
+      background-color: #dbeafe;
+      border-left-color: blue;
+    }
+
+    .green {
+      background-color: #dcfce7;
+      border-left-color: green;
+    }
+
+    .gray {
+      background-color: #eeeeee;
+      border-left-color: gray;
+    }
+
+    .unread {
+      font-weight: bold;
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 7px 10px;
+      cursor: pointer;
+      margin: 3px;
+    }
+
+    .message-box {
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .success {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .warning {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .error {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+
+    .info {
+      background-color: #dbeafe;
+      color: #1e3a8a;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top">
+    <h1>Notifications</h1>
+
+    <button class="bell-button" onclick="toggleNotifications()">
+      🔔
+    </button>
+  </div>
+
+  <div id="notificationBox" class="notification-box">
+    <h2>Your Notifications</h2>
+
+    <button onclick="clearAll()">Clear All</button>
+
+    <div id="notificationList"></div>
+  </div>
+
+  <h2>Message Boxes</h2>
+
+  <div class="message-box success">
+    Success: Your information was saved.
+  </div>
+
+  <div class="message-box warning">
+    Warning: A goal deadline is coming soon.
+  </div>
+
+  <div class="message-box error">
+    Error: You have an overdue assignment.
+  </div>
+
+  <div class="message-box info">
+    Info: A new assignment was added.
+  </div>
+
+  <script>
+    var notifications = [
+      {
+        title: "Assignment due soon",
+        message: "Your math homework is due tomorrow.",
+        type: "orange",
+        time: "Today",
+        read: false
+      },
+      {
+        title: "Overdue assignment",
+        message: "Your history essay is overdue.",
+        type: "red",
+        time: "Yesterday",
+        read: false
+      },
+      {
+        title: "New assignment",
+        message: "A new science project was posted.",
+        type: "blue",
+        time: "2 hours ago",
+        read: true
+      },
+      {
+        title: "Uploaded document",
+        message: "Your resume was uploaded.",
+        type: "green",
+        time: "Monday",
+        read: false
+      }
+    ];
+
+    function showNotifications() {
+      var list = document.getElementById("notificationList");
+      list.innerHTML = "";
+
+      for (var i = 0; i < notifications.length; i++) {
+        var readClass = "";
+
+        if (notifications[i].read == false) {
+          readClass = "unread";
+        }
+
+        list.innerHTML += `
+          <div class="notification ${notifications[i].type} ${readClass}">
+            <h3>${notifications[i].title}</h3>
+            <p>${notifications[i].message}</p>
+            <p>${notifications[i].time}</p>
+
+            <button onclick="markRead(${i})">Mark Read</button>
+            <button onclick="dismissNotification(${i})">Dismiss</button>
+          </div>
+        `;
+      }
+    }
+
+    function toggleNotifications() {
+      var box = document.getElementById("notificationBox");
+
+      if (box.style.display == "none" || box.style.display == "") {
+        box.style.display = "block";
+      } else {
+        box.style.display = "none";
+      }
+    }
+
+    function markRead(index) {
+      notifications[index].read = true;
+      showNotifications();
+    }
+
+    function dismissNotification(index) {
+      notifications.splice(index, 1);
+      showNotifications();
+    }
+
+    function clearAll() {
+      notifications = [];
+      showNotifications();
+    }
+
+    showNotifications();
+  </script>
+</body>
+</html>
