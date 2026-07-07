@@ -21,6 +21,15 @@ public class Main {
         UserDatabase db = new UserDatabase();
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
 
+        ProcessBuilder pb = new ProcessBuilder("python", "-m", "Backend.Login.email_verification");
+        pb.inheritIO(); // shows Flask's output in the same terminal as Java's
+        Process flaskProcess = pb.start();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        flaskProcess.destroy();
+        System.out.println("Flask server stopped.");
+        }));
+
         server.createContext("/api/login", exchange -> handleLogin(exchange, db));
         server.createContext("/", Main::handleStaticFile);
 
