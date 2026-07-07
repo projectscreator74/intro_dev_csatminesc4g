@@ -14,6 +14,7 @@ public class AccountService {
     }
 
     public boolean login(String email, String password) throws SQLException {
+        System.out.println("!!!!! LOGIN METHOD WAS CALLED !!!!!");
         String sql = "SELECT password FROM account WHERE email_id = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -22,7 +23,12 @@ public class AccountService {
 
             if (rs.next()) {
                 String storedPassword = rs.getString("password");
+                System.out.println("Stored password: [" + storedPassword + "]");
+                System.out.println("Given password: [" + password + "]");
+                System.out.println("Match: " + storedPassword.equals(password));
                 return storedPassword.equals(password);
+            } else {
+                System.out.println("No account found for email: [" + email + "]");
             }
         }
 

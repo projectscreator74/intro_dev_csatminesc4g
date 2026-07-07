@@ -8,6 +8,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,17 +18,17 @@ public class Main {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("\"email\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("\"password\"\\s*:\\s*\"([^\"]*)\"");
 
-    public static void main(String[] args) throws IOException {
-        UserDatabase db = new UserDatabase();
+    public static void main(String[] args) throws IOException, SQLException {
+        AccountService db = new AccountService();
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
 
         ProcessBuilder pb = new ProcessBuilder("python", "-m", "Backend.Login.email_verification");
-        pb.inheritIO(); // shows Flask's output in the same terminal as Java's
+        pb.inheritIO();
         Process flaskProcess = pb.start();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-        flaskProcess.destroy();
-        System.out.println("Flask server stopped.");
+            flaskProcess.destroy();
+            System.out.println("Flask server stopped.");
         }));
 
         server.createContext("/api/login", exchange -> handleLogin(exchange, db));
@@ -39,7 +40,7 @@ public class Main {
         System.out.println("StudyStack is running at http://localhost:" + PORT + "/login.html");
     }
 
-    private static void handleLogin(HttpExchange exchange, UserDatabase db) throws IOException {
+    private static void handleLogin(HttpExchange exchange, AccountService db) throws IOException {
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendJson(exchange, 405, "{\"success\":false,\"message\":\"Use POST for login.\"}");
             return;
@@ -49,10 +50,14 @@ public class Main {
         String email = getJsonValue(body, EMAIL_PATTERN);
         String password = getJsonValue(body, PASSWORD_PATTERN);
 
-        if (db.login(email, password)) {
-            sendJson(exchange, 200, "{\"success\":true,\"message\":\"Login successful.\"}");
-        } else {
-            sendJson(exchange, 401, "{\"success\":false,\"message\":\"Invalid email or password.\"}");
+        try {
+            if (db.login(email, password)) {
+                sendJson(exchange, 200, "{\"success\":true,\"message\":\"Login successful.\"}");
+            } else {
+                sendJson(exchange, 401, "{\"success\":false,\"message\":\"Invalid email or password.\"}");
+            }
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false,\"message\":\"Server error.\"}");
         }
     }
 
