@@ -17,6 +17,9 @@ public class Main {
     private static final int PORT = 8080;
     private static final Pattern EMAIL_PATTERN = Pattern.compile("\"email\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("\"password\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("\"username\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern DISPLAY_NAME_PATTERN = Pattern.compile("\"displayName\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern USER_ID_PATTERN = Pattern.compile("\"userId\"\\s*:\\s*(\\d+)");
 
     public static void main(String[] args) throws IOException, SQLException {
         AccountService db = new AccountService();
@@ -32,6 +35,8 @@ public class Main {
         }));
 
         server.createContext("/api/login", exchange -> handleLogin(exchange, db));
+        server.createContext("/api/register", exchange -> handleRegisterStep1(exchange, db));
+        server.createContext("/api/complete-profile", exchange -> handleRegisterStep2(exchange, db));
         server.createContext("/", Main::handleStaticFile);
 
         server.setExecutor(null);
@@ -58,6 +63,46 @@ public class Main {
             }
         } catch (SQLException e) {
             sendJson(exchange, 500, "{\"success\":false,\"message\":\"Server error.\"}");
+        }
+    }
+
+    private static void handleRegisterStep1(HttpExchange exchange, AccountService db) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false,\"message\":\"Use POST for registration.\"}");
+            return;
+        }
+
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String password = getJsonValue(body, PASSWORD_PATTERN);
+
+        try {
+            int userId = db.createAccount(email, password);
+            sendJson(exchange, 200, "{\"success\":true,\"userId\":" + userId + "}");
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false,\"message\":\"Registration failed. Email may already be in use.\"}");
+        }
+    }
+
+    private static void handleRegisterStep2(HttpExchange exchange, AccountService db) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false,\"message\":\"Use POST for this step.\"}");
+            return;
+        }
+
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String userIdStr = getJsonValue(body, USER_ID_PATTERN);
+        String username = getJsonValue(body, USERNAME_PATTERN);
+        String displayName = getJsonValue(body, DISPLAY_NAME_PATTERN);
+
+        try {
+            int userId = Integer.parseInt(userIdStr);
+            db.completeProfile(userId, username, displayName);
+            sendJson(exchange, 200, "{\"success\":true,\"message\":\"Profile completed.\"}");
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false,\"message\":\"Failed to complete profile.\"}");
+        } catch (NumberFormatException e) {
+            sendJson(exchange, 400, "{\"success\":false,\"message\":\"Invalid user ID.\"}");
         }
     }
 
