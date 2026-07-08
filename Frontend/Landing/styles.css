@@ -1,0 +1,428 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body {
+  background-color: #F7F8FA;
+  color: rgb(46, 74, 159);
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background-color: white;
+  border-bottom: 1px solid whitesmoke;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: rgb(46, 74, 159);
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background-color 0.15s ease;
+}
+
+.btn-icon:hover {
+  background-color: whitesmoke;
+}
+
+.nav-arrow {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.nav-arrow.open {
+  transform: rotate(90deg);
+}
+
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.logo-badge {
+  width: 32px;
+  height: 32px;
+  background-color: royalblue;
+  color: white;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgb(46, 74, 159);
+}
+
+.side-menu {
+  position: fixed;
+  top: 0;
+  left: -260px;
+  width: 240px;
+  height: 100%;
+  background-color: white;
+  border-right: 1px solid whitesmoke;
+  padding: 80px 16px 16px;
+  transition: left 0.25s ease;
+  z-index: 20;
+}
+
+.side-menu.open {
+  left: 0;
+}
+
+.side-menu ul {
+  list-style: none;
+}
+
+.side-menu li {
+  margin-bottom: 8px;
+}
+
+.side-menu a {
+  display: block;
+  padding: 10px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: rgb(46, 74, 159);
+  font-size: 15px;
+}
+
+.side-menu a:hover {
+  background-color: whitesmoke;
+}
+
+.side-menu a.active {
+  background-color: rgb(46, 74, 159);
+  color: whitesmoke;
+}
+
+.backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 15;
+}
+
+.backdrop.visible {
+  display: block;
+}
+
+.page-content {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.page-content h1 {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  color: #566472;
+  margin-bottom: 32px;
+}
+
+.calendar-card {
+  background-color: white;
+  border-radius: 16px;
+  border: 1px solid whitesmoke;
+  padding: 24px;
+}
+
+.calendar-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.calendar-top h2 {
+  font-size: 18px;
+}
+
+.calendar-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  text-align: center;
+}
+
+.calendar-days .day-name {
+  font-size: 12px;
+  color: #8B97A3;
+  font-weight: 600;
+  padding-bottom: 8px;
+}
+
+.calendar-days .day {
+  padding: 10px 0;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.calendar-days .day:hover {
+  background-color: whitesmoke;
+}
+
+.calendar-days .day.blank {
+  cursor: default;
+}
+
+.calendar-days .day.today {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background-color: rgb(46, 74, 159);
+  color: white;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.classes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.class-tile {
+  display: block;
+  background-color: white;
+  border-radius: 16px;
+  border: 1px solid whitesmoke;
+  padding: 20px;
+  text-decoration: none;
+  color: rgb(46, 74, 159);
+  transition: border-color 0.15s ease;
+}
+
+.class-tile:hover {
+  border-color: rgb(46, 74, 159);
+}
+
+.class-tile-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.class-tile-top h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.class-time {
+  font-size: 13px;
+  color: #566472;
+}
+
+.grade-badge {
+  background-color: #EAF4EC;
+  color: #2E7D46;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.back-btn {
+  display: inline-block;
+  color: #5C6B7A;
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.back-btn:hover {
+  color: rgb(46, 74, 159);
+}
+
+.detail-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.detail-top h1 {
+  font-size: 26px;
+}
+
+.assignments-card {
+  background-color: white;
+  border-radius: 16px;
+  border: 1px solid whitesmoke;
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.assignments-card h2 {
+  font-size: 17px;
+  margin-bottom: 16px;
+}
+
+.assignments {
+  list-style: none;
+}
+
+.assignment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid whitesmoke;
+}
+
+.assignment-row:last-child {
+  border-bottom: none;
+}
+
+.assignment-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.assignment-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.due-date {
+  font-size: 12px;
+  color: #8B97A3;
+}
+
+.grade-tag {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.grade-tag.graded {
+  background-color: #EAF4EC;
+  color: #2E7D46;
+}
+
+.grade-tag.ungraded {
+  background-color: #F2F0E8;
+  color: #8A7A2E;
+}
+
+.add-btn {
+  margin-top: 16px;
+  background-color: rgb(46, 74, 159);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add-btn:hover {
+  background-color: rgb(35, 56, 119);
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-shell {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-panel {
+  background-color: white;
+  border: 1px solid whitesmoke;
+  border-radius: 16px;
+  padding: 28px;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.login-panel h1 {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.login-form label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.login-form input {
+  border: 1px solid #D7DCE2;
+  border-radius: 10px;
+  color: #1F2937;
+  font-size: 15px;
+  padding: 11px 12px;
+}
+
+.login-form input:focus {
+  border-color: rgb(46, 74, 159);
+  outline: none;
+}
+
+.login-message {
+  min-height: 20px;
+  color: #9B2C2C;
+  font-size: 14px;
+}
+
+.login-btn {
+  margin-top: 0;
+}
