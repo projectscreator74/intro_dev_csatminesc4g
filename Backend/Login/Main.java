@@ -80,7 +80,8 @@ public class Main {
             int userId = db.createAccount(email, password);
             sendJson(exchange, 200, "{\"success\":true,\"userId\":" + userId + "}");
         } catch (SQLException e) {
-            sendJson(exchange, 500, "{\"success\":false,\"message\":\"Registration failed. Email may already be in use.\"}");
+            sendJson(exchange, 500,
+                    "{\"success\":false,\"message\":\"Registration failed. Email may already be in use.\"}");
         }
     }
 
@@ -112,7 +113,7 @@ public class Main {
             return;
         }
 
-        Path frontendRoot = Path.of("Frontend", "Landing").toAbsolutePath().normalize();
+        Path frontendRoot = Path.of("..", "..", "Frontend", "Landing").toAbsolutePath().normalize();
         URI requestUri = exchange.getRequestURI();
         String requestedPath = requestUri.getPath().equals("/") ? "/login.html" : requestUri.getPath();
         Path filePath = frontendRoot.resolve(requestedPath.substring(1)).normalize();
