@@ -112,7 +112,7 @@ public class Main {
             return;
         }
 
-        Path frontendRoot = Path.of("Frontend", "Landing").toAbsolutePath().normalize();
+        Path frontendRoot = Path.of("..", "..", "Frontend", "Landing").toAbsolutePath().normalize();
         URI requestUri = exchange.getRequestURI();
         String requestedPath = requestUri.getPath().equals("/") ? "/login.html" : requestUri.getPath();
         Path filePath = frontendRoot.resolve(requestedPath.substring(1)).normalize();
@@ -140,7 +140,8 @@ public class Main {
         sendText(exchange, statusCode, json, "application/json");
     }
 
-    private static void sendText(HttpExchange exchange, int statusCode, String text, String contentType) throws IOException {
+    private static void sendText(HttpExchange exchange, int statusCode, String text, String contentType)
+            throws IOException {
         byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", contentType + "; charset=utf-8");
         exchange.sendResponseHeaders(statusCode, bytes.length);

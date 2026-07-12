@@ -1,25 +1,49 @@
-const classList = [
-  { id: "calc-bc", name: "AP Calculus BC", period: "Period 1", average: 94 },
-  { id: "french", name: "AP French", period: "Period 2", average: 88 },
-  { id: "cs-a", name: "AP Computer Science A", period: "Period 3", average: 97 },
-  { id: "world-history", name: "AP World History", period: "Period 4", average: 90 },
-  { id: "chem", name: "Honors Chemistry", period: "Period 5", average: 85 },
-];
-
 const grid = document.getElementById('classes-grid');
 
-classList.forEach(cls => {
-  const tile = document.createElement('a');
-  tile.href = `class-detail.html?id=${cls.id}`;
-  tile.className = 'class-tile';
+function renderClasses() {
+  const classes = loadClasses();
+  grid.innerHTML = "";
 
-  tile.innerHTML = `
-    <div class="class-tile-top">
-      <h3>${cls.name}</h3>
-      <span class="grade-badge">${cls.average}%</span>
-    </div>
-    <p class="class-time">${cls.period}</p>
-  `;
+  classes.forEach(cls => {
+    const avg = getClassAverage(cls.assignments);
 
-  grid.appendChild(tile);
+    const title = document.createElement('a');
+    title.href = `class-detail.html?id=${cls.id}`;
+    title.className = 'class-title';
+
+    title.innerHTML = `
+      <div class="class-title-top">
+        <h3>${cls.name}</h3>
+        <div class="class-title-actions">
+          <span class="grade-badge">${gradeLabel(avg)}</span>
+          <button class="remove-btn" data-id="${cls.id}" title="Remove Class">&times;</button>
+        </div>
+      </div>
+      <p class="class-time">${cls.period}</p>
+    `;
+
+    grid.appendChild(title);
+  });
+
+  grid.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const cls = getClassById(btn.dataset.id);
+      if (confirm(`Remove ${cls.name}? This will also delete its assignments.`)) {
+        removeClass(btn.dataset.id);
+        renderClasses();
+      }
+    });
+  });
+}
+ 
+document.getElementById('add-class-btn').addEventListener('click', () => {
+  const name = prompt("Class name:");
+  if (!name) return;
+  const period = prompt("Period (e.g. Period 6):") || "";
+  addClass(name, period);
+  renderClasses();
 });
+ 
+renderClasses();
