@@ -13,7 +13,6 @@ public class AccountService {
     }
 
     public boolean login(String email, String password) throws SQLException {
-        System.out.println("!!!!! LOGIN METHOD WAS CALLED !!!!!");
         String sql = "SELECT password FROM account WHERE email_id = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -22,15 +21,43 @@ public class AccountService {
 
             if (rs.next()) {
                 String storedPassword = rs.getString("password");
-                System.out.println("Stored password: [" + storedPassword + "]");
-                System.out.println("Given password: [" + password + "]");
-                System.out.println("Match: " + storedPassword.equals(password));
                 return storedPassword.equals(password);
-            } else {
-                System.out.println("No account found for email: [" + email + "]");
             }
         }
 
         return false;
+    }
+
+    public int createAccount(String email, String password) throws SQLException {
+        String sql = "INSERT INTO account (email_id, password) VALUES (?, ?) RETURNING user_id";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            stmt.setString(2, password);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("user_id");
+            }
+        }
+
+        throw new SQLException("Account creation failed.");
+    }
+
+    public void completeProfile(int userId, String username, String displayName) throws SQLException {
+        String updateAccountSql = "UPDATE account SET user_name = ? WHERE user_id = ?";
+        String insertProfileSql = "INSERT INTO profile (user_id, display_name) VALUES (?, ?)";
+
+        try (PreparedStatement stmt = conn.prepareStatement(updateAccountSql)) {
+            stmt.setString(1, username);
+            stmt.setInt(2, userId);
+            stmt.executeUpdate();
+        }
+
+        try (PreparedStatement stmt = conn.prepareStatement(insertProfileSql)) {
+            stmt.setInt(1, userId);
+            stmt.setString(2, displayName);
+            stmt.executeUpdate();
+        }
     }
 }
