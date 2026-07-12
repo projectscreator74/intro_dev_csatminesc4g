@@ -95,7 +95,8 @@ public class Main {
         sendText(exchange, statusCode, json, "application/json");
     }
 
-    private static void sendText(HttpExchange exchange, int statusCode, String text, String contentType) throws IOException {
+    private static void sendText(HttpExchange exchange, int statusCode, String text, String contentType)
+            throws IOException {
         byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", contentType + "; charset=utf-8");
         exchange.sendResponseHeaders(statusCode, bytes.length);
