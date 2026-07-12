@@ -21,7 +21,7 @@ public class AccountService {
 
             if (rs.next()) {
                 String storedPassword = rs.getString("password");
-                return storedPassword.equals(password);
+                return password.equals(storedPassword);
             }
         }
 
