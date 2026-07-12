@@ -1,6 +1,7 @@
+// run with: node --test utils.test.js
 const test = require('node:test');
 const assert = require('node:assert');
-const { isSameDate, daysInMonth, getClassAverage, gradeLabel } = require('./utils');
+const { isSameDate, daysInMonth, getClassAverage, gradeLabel, parseDueDate } = require('./utils');
 
 test('isSameDate matches the reference date', () => {
   const ref = new Date(2026, 5, 30);
@@ -36,4 +37,22 @@ test('gradeLabel formats a number as a percent', () => {
 
 test('gradeLabel shows "Not graded" for null', () => {
   assert.strictEqual(gradeLabel(null), "Not graded");
+});
+
+test('parseDueDate parses a short date string correctly', () => {
+  const result = parseDueDate("Jun 20", 2026);
+  assert.strictEqual(result.getMonth(), 5); // June = index 5
+  assert.strictEqual(result.getDate(), 20);
+});
+
+test('parseDueDate sorts earlier dates before later ones', () => {
+  const a = parseDueDate("Jun 15", 2026);
+  const b = parseDueDate("Jul 2", 2026);
+  assert.ok(a < b);
+});
+
+test('parseDueDate never throws, even on garbage input with no date in it', () => {
+  const result = parseDueDate("completely invalid text with no numbers at all", 2026);
+  assert.ok(result instanceof Date);
+  assert.ok(!isNaN(result.getTime()));
 });

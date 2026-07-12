@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StudyStack</title>
+  <title>StudyStack — Grades</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -22,10 +22,10 @@
 
   <nav id="side-menu" class="side-menu">
     <ul>
-      <li><a href="index.html" class="active">Dashboard</a></li>
+      <li><a href="index.html">Dashboard</a></li>
       <li><a href="classes.html">Classes</a></li>
       <li><a href="assignments.html">Assignments</a></li>
-      <li><a href="grades.html">Grades</a></li>
+      <li><a href="grades.html" class="active">Grades</a></li>
       <li><a href="settings.html">Settings</a></li>
     </ul>
   </nav>
@@ -33,23 +33,17 @@
   <div id="backdrop" class="backdrop"></div>
 
   <main class="page-content">
-    <h1>Welcome back</h1>
-    <p class="subtitle">Here's what's on your plate today.</p>
+    <h1>Grades</h1>
+    <p class="subtitle">Your current average in each class.</p>
 
-    <section class="calendar-card">
-      <div class="calendar-top">
-        <h2 id="month-title">June 2026</h2>
-        <div class="calendar-controls">
-          <button id="prev-btn" class="btn-icon" aria-label="Previous month">&#8249;</button>
-          <button id="next-btn" class="btn-icon" aria-label="Next month">&#8250;</button>
-        </div>
-      </div>
-      <div class="calendar-days" id="calendar-days"></div>
+    <section class="assignments-card">
+      <ul class="assignments" id="grades-list"></ul>
     </section>
   </main>
 
   <script src="utils.js"></script>
+  <script src="store.js"></script>
   <script src="sidebar.js"></script>
-  <script src="script.js"></script>
+  <script src="grades.js"></script>
 </body>
 </html>

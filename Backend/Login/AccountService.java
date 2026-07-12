@@ -8,7 +8,7 @@ public class AccountService {
     private Connection conn;
 
     public AccountService() throws SQLException {
-        String url = "jdbc:postgresql://localhost:5432/studystack";
+        String url = "jdbc:postgresql://localhost:5432/studystack?options=-c%20TimeZone=UTC";
         conn = DriverManager.getConnection(url, "postgres", "devpassword123");
     }
 
