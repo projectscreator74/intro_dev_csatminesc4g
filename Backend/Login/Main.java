@@ -25,7 +25,16 @@ public class Main {
         AccountService db = new AccountService();
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
 
-        ProcessBuilder pb = new ProcessBuilder("python3", "-m", "Backend.Login.email_verification");
+        String pythonCommand = "python";
+        try {
+            new ProcessBuilder(pythonCommand, "--version").start().waitFor();
+        } catch (IOException e) {
+            pythonCommand = "python3";
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        ProcessBuilder pb = new ProcessBuilder(pythonCommand, "-m", "Backend.Login.email_verification");
         pb.inheritIO();
         Process flaskProcess = pb.start();
 
@@ -62,6 +71,7 @@ public class Main {
                 sendJson(exchange, 401, "{\"success\":false,\"message\":\"Invalid email or password.\"}");
             }
         } catch (SQLException e) {
+            e.printStackTrace();
             sendJson(exchange, 500, "{\"success\":false,\"message\":\"Server error.\"}");
         }
     }
@@ -140,8 +150,7 @@ public class Main {
         sendText(exchange, statusCode, json, "application/json");
     }
 
- private static void sendText(HttpExchange exchange, int statusCode, String text, String contentType)
-            throws IOException {
+    private static void sendText(HttpExchange exchange, int statusCode, String text, String contentType) throws IOException {
         byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", contentType + "; charset=utf-8");
         exchange.sendResponseHeaders(statusCode, bytes.length);
