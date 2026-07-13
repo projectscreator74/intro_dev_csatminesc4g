@@ -17,6 +17,11 @@ function gradeLabel(grade) {
   return grade === null || grade === undefined ? "Not graded" : `${grade}%`;
 }
 
+function parseDueDate(due, referenceYear = new Date().getFullYear()) {
+  const parsed = new Date(`${due}, ${referenceYear}`);
+  return isNaN(parsed.getTime()) ? new Date(8640000000000000) : parsed;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { isSameDate, daysInMonth, getClassAverage, gradeLabel };
+  module.exports = { isSameDate, daysInMonth, getClassAverage, gradeLabel, parseDueDate };
 }

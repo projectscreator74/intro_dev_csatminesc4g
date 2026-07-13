@@ -6,7 +6,7 @@
 }
 
 body {
-  background-color: #F7F8FA;
+  background-color: rgb(248, 249, 253);
   color: rgb(46, 74, 159);
 }
 
@@ -141,7 +141,7 @@ body {
 }
 
 .subtitle {
-  color: #566472;
+  color: rgb(86, 100, 114);
   margin-bottom: 32px;
 }
 
@@ -177,7 +177,7 @@ body {
 
 .calendar-days .day-name {
   font-size: 12px;
-  color: #8B97A3;
+  color: rgb(142, 151, 166);
   font-weight: 600;
   padding-bottom: 8px;
 }
@@ -215,9 +215,10 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
+  margin-top: 20px;
 }
 
-.class-tile {
+.class-title {
   display: block;
   background-color: white;
   border-radius: 16px;
@@ -228,31 +229,38 @@ body {
   transition: border-color 0.15s ease;
 }
 
-.class-tile:hover {
+.class-title:hover {
   border-color: rgb(46, 74, 159);
 }
 
-.class-tile-top {
+.class-title-top {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   margin-bottom: 6px;
 }
 
-.class-tile-top h3 {
+.class-title-top h3 {
   font-size: 16px;
   font-weight: 600;
 }
 
+.classes-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .class-time {
   font-size: 13px;
-  color: #566472;
+  color: rgb(86, 100, 114);
 }
 
 .grade-badge {
-  background-color: #EAF4EC;
-  color: #2E7D46;
+  background-color: rgb(219, 237, 219);
+  color: rgb(44, 125, 44);
   font-size: 13px;
   font-weight: 600;
   padding: 4px 10px;
@@ -262,7 +270,7 @@ body {
 
 .back-btn {
   display: inline-block;
-  color: #5C6B7A;
+  color: rgb(92, 107, 122);
   text-decoration: none;
   font-size: 14px;
   margin-bottom: 20px;
@@ -304,6 +312,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   padding: 12px 0;
   border-bottom: 1px solid whitesmoke;
 }
@@ -312,10 +321,27 @@ body {
   border-bottom: none;
 }
 
+.assignment-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.assignment-check {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: rgb(46, 74, 159);
+}
+
 .assignment-meta {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .assignment-name {
@@ -323,9 +349,14 @@ body {
   font-weight: 500;
 }
 
+.assignment-name.completed {
+  text-decoration: line-through;
+  color: rgb(158, 170, 179);
+}
+
 .due-date {
   font-size: 12px;
-  color: #8B97A3;
+  color: rgb(158, 170, 179);
 }
 
 .grade-tag {
@@ -333,16 +364,37 @@ body {
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 999px;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  flex-shrink: 0;
 }
 
 .grade-tag.graded {
-  background-color: #EAF4EC;
-  color: #2E7D46;
+  background-color: rgb(219, 237, 219);
+  color: rgb(44, 125, 44);
 }
 
 .grade-tag.ungraded {
-  background-color: #F2F0E8;
-  color: #8A7A2E;
+  background-color: rgb(238, 237, 227);
+  color: rgb(160, 160, 46);
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: rgb(169, 41, 41);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.remove-btn:hover {
+  background-color: rgb(255, 221, 221);
+  color: rgb(198, 38, 38);
 }
 
 .add-btn {
@@ -359,6 +411,93 @@ body {
 
 .add-btn:hover {
   background-color: rgb(35, 56, 119);
+}
+
+.inline-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.inline-form select {
+  padding: 9px 12px;
+  border: 1px solid whitesmoke;
+  border-radius: 8px;
+  font-size: 14px;
+  color: rgb(46, 74, 159);
+  font-family: inherit;
+  background-color: white;
+}
+
+.settings-card {
+  background-color: white;
+  border-radius: 16px;
+  border: 1px solid whitesmoke;
+  padding: 24px;
+  margin-top: 20px;
+}
+ 
+.settings-card h2 {
+  font-size: 17px;
+  margin-bottom: 16px;
+}
+ 
+.form-row {
+  margin-bottom: 16px;
+}
+ 
+.form-row label {
+  display: block;
+  font-size: 13px;
+  color: rgb(86, 100, 114);
+  margin-bottom: 6px;
+}
+ 
+.form-row input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid whitesmoke;
+  border-radius: 8px;
+  font-size: 14px;
+  color: rgb(46, 74, 159);
+  font-family: inherit;
+}
+ 
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+ 
+.toggle-row input {
+  accent-color: rgb(46, 74, 159);
+  width: 16px;
+  height: 16px;
+}
+ 
+.save-msg {
+  font-size: 13px;
+  color: rgb(46, 125, 50);
+  margin-left: 10px;
+}
+ 
+.danger-btn {
+  margin-top: 16px;
+  background-color: white;
+  color: rgb(192, 57, 43);
+  border: 1px solid rgb(240, 208, 208);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+ 
+.danger-btn:hover {
+  background-color: #fdf2f2;
 }
 
 .login-page {
@@ -405,9 +544,9 @@ body {
 }
 
 .login-form input {
-  border: 1px solid #D7DCE2;
+  border: 1px solid rgb(216, 218, 227);
   border-radius: 10px;
-  color: #1F2937;
+  color: rgb(31, 41, 55);
   font-size: 15px;
   padding: 11px 12px;
 }
@@ -419,10 +558,11 @@ body {
 
 .login-message {
   min-height: 20px;
-  color: #9B2C2C;
+  color: rgb(169, 44, 44);
   font-size: 14px;
 }
 
 .login-btn {
   margin-top: 0;
 }
+
