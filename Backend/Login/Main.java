@@ -22,7 +22,7 @@ public class Main {
         AccountService db = new AccountService();
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
 
-        ProcessBuilder pb = new ProcessBuilder("python", "-m", "Backend.Login.email_verification");
+        ProcessBuilder pb = new ProcessBuilder("python3", "-m", "Backend.Login.email_verification");
         pb.inheritIO();
         Process flaskProcess = pb.start();
 
