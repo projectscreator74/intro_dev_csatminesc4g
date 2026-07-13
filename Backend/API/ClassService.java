@@ -3,7 +3,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -79,7 +80,7 @@ public class ClassService {
         }
     }
 
-    // ===== Frontend-facing CRUD methods =====
+    // ===== Frontend-facing CRUD methods (new) =====
 
     public JSONArray getClassesWithAssignments(int userId) throws SQLException {
         JSONArray result = new JSONArray();
@@ -104,35 +105,16 @@ public class ClassService {
     }
 
     private JSONArray getAssignmentsForClass(int classId) throws SQLException {
-        JSONArray assignments = new JSONArray();
         String sql = "SELECT assignment_id, title, timedate, due_label, user_score, completed FROM assignment WHERE class_id = ? ORDER BY assignment_id";
 
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, classId);
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                JSONObject a = new JSONObject();
-                a.put("id", rs.getInt("assignment_id"));
-                a.put("title", rs.getString("title"));
-
-                String dueLabel = rs.getString("due_label");
-                if (dueLabel != null && !dueLabel.isBlank()) {
-                    a.put("due", dueLabel);
-                } else {
-                    Timestamp ts = rs.getTimestamp("timedate");
-                    a.put("due", ts == null ? "" : ts.toString());
-                }
-
-                double score = rs.getDouble("user_score");
-                a.put("grade", rs.wasNull() ? JSONObject.NULL : score);
-
-                a.put("completed", rs.getBoolean("completed"));
-                assignments.put(a);
-            }
+        String dueLabel = rs.getString("due_label");
+        
+        if (dueLabel != null && !dueLabel.isBlank()) {
+            a.put("due", dueLabel);
+        } else {
+            java.sql.Timestamp ts = rs.getTimestamp("timedate");
+            a.put("due", ts == null ? "" : ts.toString());
         }
-
-        return assignments;
     }
 
     public int addClass(int userId, String name, String period) throws SQLException {
@@ -167,6 +149,7 @@ public class ClassService {
 
     public int addAssignment(int userId, int classId, String title, String due) throws SQLException {
         String sql = "INSERT INTO assignment (user_id, class_id, title, due_label, total_points, completed) VALUES (?, ?, ?, ?, 100, false) RETURNING assignment_id";
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             stmt.setInt(2, classId);
