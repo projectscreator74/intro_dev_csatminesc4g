@@ -1,3 +1,20 @@
+const USER_EMAIL = localStorage.getItem('studystackUserEmail');
+
+async function loadWelcomeName() {
+  const response = await fetch('/api/settings/get', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: USER_EMAIL }),
+  });
+  const settings = await response.json();
+  const heading = document.getElementById('welcome-heading');
+  if (heading && settings.displayName) {
+    heading.textContent = `Welcome Back, ${settings.displayName}`;
+  }
+}
+
+loadWelcomeName();
+
 const monthTitle = document.getElementById('month-title');
 const daysContainer = document.getElementById('calendar-days');
 const prevBtn = document.getElementById('prev-btn');
