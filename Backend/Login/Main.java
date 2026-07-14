@@ -28,7 +28,6 @@ public class Main {
     private static final Pattern DUE_PATTERN = Pattern.compile("\"due\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern ASSIGNMENT_ID_PATTERN = Pattern.compile("\"assignmentId\"\\s*:\\s*(\\d+)");
     private static final Pattern GRADE_PATTERN = Pattern.compile("\"grade\"\\s*:\\s*([0-9.]+)");
-    private static final Pattern NOTIFICATIONS_PATTERN = Pattern.compile("\"notifications\"\\s*:\\s*(true|false)");
 
     public static void main(String[] args) throws IOException, SQLException {
         AccountService db = new AccountService();
@@ -55,8 +54,7 @@ public class Main {
 
         server.createContext("/api/login", exchange -> handleLogin(exchange, db));
         server.createContext("/api/register", exchange -> handleRegisterStep1(exchange, db));
-        server.createContext("/api/complete-profile", exchange -> handleRegisterStep2(exchange, db));
-        server.createContext("/api/settings/get", exchange -> handleSettingsGet(exchange, db));
+        server.createContext("/api/complete-profile", exchange -> handleRegisterStep2(exchange, db));;
         server.createContext("/api/settings/save", exchange -> handleSettingsSave(exchange, db));
         server.createContext("/api/classes/list", exchange -> handleClassesList(exchange, db, classService));
         server.createContext("/api/classes/add", exchange -> handleClassesAdd(exchange, db, classService));
@@ -66,7 +64,6 @@ public class Main {
         server.createContext("/api/assignments/grade", exchange -> handleAssignmentsGrade(exchange, db, classService));
         server.createContext("/api/assignments/complete", exchange -> handleAssignmentsComplete(exchange, db, classService));
         server.createContext("/api/settings/get", exchange -> handleSettingsGet(exchange, db));
-        server.createContext("/api/settings/save", exchange -> handleSettingsSave(exchange, db));
         server.createContext("/", Main::handleStaticFile);
 
         server.setExecutor(null);
@@ -353,38 +350,5 @@ public class Main {
             return "application/javascript; charset=utf-8";
         }
         return "application/octet-stream";
-    }
-
-    private static void handleSettingsGet(HttpExchange exchange, AccountService db) throws IOException {
-        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
-            sendJson(exchange, 405, "{\"success\":false}");
-            return;
-        }
-        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-        String email = getJsonValue(body, EMAIL_PATTERN);
-        try {
-            int userId = db.getUserIdByEmail(email);
-            sendJson(exchange, 200, db.getSettings(userId).toString());
-        } catch (SQLException e) {
-            sendJson(exchange, 500, "{\"success\":false}");
-        }
-    }
-
-    private static void handleSettingsSave(HttpExchange exchange, AccountService db) throws IOException {
-        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
-            sendJson(exchange, 405, "{\"success\":false}");
-            return;
-        }
-        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-        String email = getJsonValue(body, EMAIL_PATTERN);
-        String displayName = getJsonValue(body, DISPLAY_NAME_PATTERN);
-        String notificationsStr = getJsonValue(body, NOTIFICATIONS_PATTERN);
-        try {
-            int userId = db.getUserIdByEmail(email);
-            db.saveSettings(userId, displayName, Boolean.parseBoolean(notificationsStr));
-            sendJson(exchange, 200, "{\"success\":true}");
-        } catch (SQLException e) {
-            sendJson(exchange, 500, "{\"success\":false}");
-        }
     }
 }

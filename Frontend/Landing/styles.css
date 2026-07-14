@@ -79,7 +79,7 @@ body {
   height: 100%;
   background-color: white;
   border-right: 1px solid whitesmoke;
-  padding: 80px 16px 16px;
+  padding: 40px 16px 16px;
   transition: left 0.25s ease;
   z-index: 20;
 }
