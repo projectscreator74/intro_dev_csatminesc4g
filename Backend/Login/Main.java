@@ -20,6 +20,7 @@ public class Main {
     private static final Pattern USERNAME_PATTERN = Pattern.compile("\"username\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern DISPLAY_NAME_PATTERN = Pattern.compile("\"displayName\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern USER_ID_PATTERN = Pattern.compile("\"userId\"\\s*:\\s*(\\d+)");
+    private static final Pattern NOTIFICATIONS_PATTERN = Pattern.compile("\"notifications\"\\s*:\\s*(true|false)");
 
     public static void main(String[] args) throws IOException, SQLException {
         AccountService db = new AccountService();
@@ -46,6 +47,8 @@ public class Main {
         server.createContext("/api/login", exchange -> handleLogin(exchange, db));
         server.createContext("/api/register", exchange -> handleRegisterStep1(exchange, db));
         server.createContext("/api/complete-profile", exchange -> handleRegisterStep2(exchange, db));
+        server.createContext("/api/settings/get", exchange -> handleSettingsGet(exchange, db));
+        server.createContext("/api/settings/save", exchange -> handleSettingsSave(exchange, db));
         server.createContext("/", Main::handleStaticFile);
 
         server.setExecutor(null);
@@ -174,5 +177,38 @@ public class Main {
         }
 
         return "application/octet-stream";
+    }
+
+    private static void handleSettingsGet(HttpExchange exchange, AccountService db) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            sendJson(exchange, 200, db.getSettings(userId).toString());
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleSettingsSave(HttpExchange exchange, AccountService db) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String displayName = getJsonValue(body, DISPLAY_NAME_PATTERN);
+        String notificationsStr = getJsonValue(body, NOTIFICATIONS_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            db.saveSettings(userId, displayName, Boolean.parseBoolean(notificationsStr));
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
     }
 }

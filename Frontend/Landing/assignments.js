@@ -1,8 +1,8 @@
 const classSelect = document.getElementById('class-select');
 const list = document.getElementById('all-assignments-list');
 
-function renderAssignments() {
-  const classes = loadClasses();
+async function renderAssignments() {
+  const classes = await loadClasses();
 
   classSelect.innerHTML = classes.length
     ? classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('')
@@ -45,32 +45,32 @@ function renderAssignments() {
   });
 
   list.querySelectorAll('.assignment-check').forEach(box => {
-    box.addEventListener('change', () => {
-      toggleAssignmentComplete(box.dataset.class, box.dataset.id);
+    box.addEventListener('change', async () => {
+      await toggleAssignmentComplete(box.dataset.class, box.dataset.id);
       renderAssignments();
     });
   });
 
   list.querySelectorAll('.grade-tag').forEach(tag => {
-    tag.addEventListener('click', () => {
+    tag.addEventListener('click', async () => {
       const newGrade = prompt("Enter grade (0-100):");
       if (newGrade === null || newGrade === "") return;
-      setAssignmentGrade(tag.dataset.class, tag.dataset.id, Number(newGrade));
+      await setAssignmentGrade(tag.dataset.class, tag.dataset.id, Number(newGrade));
       renderAssignments();
     });
   });
 
   list.querySelectorAll('.remove-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       if (confirm("Remove this assignment?")) {
-        removeAssignment(btn.dataset.class, btn.dataset.id);
+        await removeAssignment(btn.dataset.class, btn.dataset.id);
         renderAssignments();
       }
     });
   });
 }
 
-document.getElementById('add-assignment-btn').addEventListener('click', () => {
+document.getElementById('add-assignment-btn').addEventListener('click', async () => {
   const classId = classSelect.value;
   if (!classId) {
     alert("Add a class first from the Classes page.");
@@ -79,7 +79,7 @@ document.getElementById('add-assignment-btn').addEventListener('click', () => {
   const title = prompt("Assignment title:");
   if (!title) return;
   const due = prompt("Due date (e.g. Jul 10):") || "";
-  addAssignment(classId, title, due);
+  await addAssignment(classId, title, due);
   renderAssignments();
 });
 
