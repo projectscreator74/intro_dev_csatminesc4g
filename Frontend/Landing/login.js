@@ -29,7 +29,7 @@ loginForm.addEventListener('submit', async (event) => {
 
     localStorage.setItem('studystackUserEmail', email);
 
-    await fetch('http://localhost:5000/send_code', {
+    await fetch('http://localhost:5001/send_code', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
@@ -50,7 +50,7 @@ verifyButton.addEventListener('click', async () => {
   verificationMessage.textContent = 'Checking code...';
 
   try {
-    const response = await fetch('http://localhost:5000/verify_code', {
+    const response = await fetch('http://localhost:5001/verify_code', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, code }),
