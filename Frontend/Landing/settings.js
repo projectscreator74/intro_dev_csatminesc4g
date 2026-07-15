@@ -89,3 +89,26 @@ document.getElementById('google-connect-btn').addEventListener('click', () => {
 });
 
 init();
+document.getElementById('delete-account-btn').addEventListener('click', async () => {
+  const confirmed = confirm('This will permanently delete your account and ALL your data. This cannot be undone. Are you sure?');
+  if (!confirmed) return;
+
+  const doubleConfirmed = confirm('Really sure? This is your last chance to cancel.');
+  if (!doubleConfirmed) return;
+
+  const response = await fetch('/api/account/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: USER_EMAIL }),
+  });
+
+  const result = await response.json();
+
+  if (result.success) {
+    localStorage.removeItem('studystackUserEmail');
+    alert('Account deleted.');
+    window.location.href = 'login.html';
+  } else {
+    alert('Failed to delete account.');
+  }
+});

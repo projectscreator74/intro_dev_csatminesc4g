@@ -14,27 +14,114 @@
         <span class="logo-name">StudyStack</span>
       </div>
 
-      <h1>Sign in</h1>
-      <p class="subtitle">Use your school account to continue.</p>
+      <!-- SIGN IN -->
+      <div id="login-section">
+        <h1>Sign in</h1>
+        <p class="subtitle">Use your school account to continue.</p>
 
-      <form id="login-form" class="login-form">
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" required>
+        <form id="login-form" class="login-form">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required>
 
-        <label for="password">Password</label>
-        <input id="password" name="password" type="password" required>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required>
 
-        <p id="login-message" class="login-message" aria-live="polite"></p>
+          <p id="login-message" class="login-message" aria-live="polite"></p>
 
-        <button class="add-btn login-btn" type="submit">Log In</button>
-      </form>
+          <button class="add-btn login-btn" type="submit">Log In</button>
+        </form>
 
-      <div id="verification-section" style="display: none;">
-        <p>Enter the 6-digit code sent to your email.</p>
-        <input type="text" id="verification-code" maxlength="6" placeholder="123456" />
-        <button id="verify-button" type="button">Verify</button>
-        <p id="verification-message"></p>
+        <p class="subtitle" style="margin-top: 28px; margin-bottom: 0;">
+          Don't have an account?
+        </p>
+        <button class="secondary-btn" type="button" id="show-register-link">Register</button>
       </div>
+
+      <!-- VERIFICATION -->
+      <div id="verification-section" style="display: none;">
+        <h1>Verify your email</h1>
+        <p class="subtitle">Enter the 6-digit code we sent to your email.</p>
+
+        <div class="verification-box">
+          <input type="text" id="verification-code" maxlength="6" placeholder="123456" inputmode="numeric" />
+          <button class="add-btn login-btn" id="verify-button" type="button" style="margin-top: 0;">Verify</button>
+        </div>
+
+        <p id="verification-message" class="login-message"></p>
+      </div>
+
+      <!-- REGISTER STEP 1: account -->
+      <div id="register-step1-section" style="display: none;">
+        <h1>Create your account</h1>
+        <p class="subtitle">Step 1 of 3</p>
+
+        <div class="login-form">
+          <label for="reg-email">Email</label>
+          <input id="reg-email" type="email" required>
+
+          <label for="reg-password">Password</label>
+          <input id="reg-password" type="password" required>
+
+          <p id="register-step1-message" class="login-message" aria-live="polite"></p>
+
+          <button class="add-btn login-btn" type="button" id="register-step1-btn">Create Account</button>
+        </div>
+
+        <p class="subtitle" style="margin-top: 28px; margin-bottom: 0;">
+          Already have an account?
+        </p>
+        <button class="secondary-btn" type="button" id="show-login-link">Sign in</button>
+      </div>
+
+      <!-- REGISTER STEP 2: profile -->
+      <div id="register-step2-section" style="display: none;">
+        <h1>Set up your profile</h1>
+        <p class="subtitle">Step 2 of 3</p>
+
+        <div class="login-form">
+          <label for="reg-username">Username</label>
+          <input id="reg-username" type="text" required>
+
+          <label for="reg-display-name">Display name</label>
+          <input id="reg-display-name" type="text" required>
+
+          <p id="register-step2-message" class="login-message" aria-live="polite"></p>
+
+          <button class="add-btn login-btn" type="button" id="register-step2-btn">Continue</button>
+        </div>
+      </div>
+
+      <!-- REGISTER STEP 3: integrations (optional) -->
+      <div id="register-step3-section" style="display: none;">
+        <h1>Connect your accounts</h1>
+        <p class="subtitle">Step 3 of 3. You can also do this later in Settings.</p>
+
+        <div class="form-row">
+          <label for="reg-canvas-domain">Canvas Domain</label>
+          <input type="text" id="reg-canvas-domain" placeholder="yourschool.instructure.com">
+          <label for="reg-canvas-token" style="margin-top: 10px;">Canvas Access Token</label>
+          <input type="text" id="reg-canvas-token" placeholder="Paste your Canvas token">
+          <button class="add-btn" id="reg-canvas-connect-btn" type="button" style="margin-top: 10px;">Connect Canvas</button>
+        </div>
+
+        <div class="form-row" style="margin-top: 24px;">
+          <label for="reg-schoology-key">Schoology Consumer Key</label>
+          <input type="text" id="reg-schoology-key" placeholder="Paste your Schoology consumer key">
+          <label for="reg-schoology-secret" style="margin-top: 10px;">Schoology Consumer Secret</label>
+          <input type="text" id="reg-schoology-secret" placeholder="Paste your Schoology consumer secret">
+          <button class="add-btn" id="reg-schoology-connect-btn" type="button" style="margin-top: 10px;">Connect Schoology</button>
+        </div>
+
+        <div class="form-row" style="margin-top: 24px;">
+          <label>Google Calendar</label>
+          <button class="add-btn" id="reg-google-connect-btn" type="button" style="margin-top: 10px;">Connect Google Calendar</button>
+        </div>
+
+        <span class="save-msg" id="register-step3-message"></span>
+
+        <button class="add-btn login-btn" type="button" id="register-finish-btn" style="margin-top: 20px;">Finish &amp; Sign In</button>
+      </div>
+
     </section>
   </main>
 
