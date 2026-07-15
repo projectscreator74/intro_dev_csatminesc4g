@@ -13,39 +13,32 @@ public class SchoologyService {
     private final String baseURL = "https://api.schoology.com/v1";
     private final HttpClient client;
 
-    public SchoologyService() {
-
-        consumerKey = System.getenv("SCHOOLOGY_KEY");
-        consumerSecret = System.getenv("SCHOOLOGY_SECRET");
-        client = HttpClient.newHttpClient();
-
+    public SchoologyService(String consumerKey, String consumerSecret) {
+        this.consumerKey = consumerKey;
+        this.consumerSecret = consumerSecret;
+        this.client = HttpClient.newHttpClient();
     }
 
     public JSONArray getCourses() throws Exception {
         String json = get("/courses");
-
         JSONObject parsed = new JSONObject(json);
         return parsed.getJSONArray("course");
-
     }
 
     public JSONArray getSections(String courseId) throws Exception {
         String json = get("/courses/" + courseId + "/sections");
-
         JSONObject parsed = new JSONObject(json);
         return parsed.getJSONArray("section");
     }
 
     public JSONArray getAssignments(String sectionId) throws Exception {
         String json = get("/sections/" + sectionId + "/assignments");
-
         JSONObject parsed = new JSONObject(json);
         return parsed.getJSONArray("assignment");
     }
 
     public JSONArray getGrades(String sectionId) throws Exception {
         String json = get("/sections/" + sectionId + "/grades");
-
         JSONObject parsed = new JSONObject(json);
         return parsed.getJSONArray("grades");
     }
@@ -119,7 +112,6 @@ public class SchoologyService {
         java.security.SecureRandom random = new java.security.SecureRandom();
         byte[] bytes = new byte[16];
         random.nextBytes(bytes);
-
         return java.util.Base64.getEncoder().encodeToString(bytes).replaceAll("[^a-zA-Z0-9]", "");
     }
 

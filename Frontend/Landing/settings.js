@@ -1,6 +1,7 @@
 const nameInput = document.getElementById('display-name');
 const notifToggle = document.getElementById('notif-toggle');
 const saveMsg = document.getElementById('save-msg');
+const integrationsMsg = document.getElementById('integrations-msg');
 
 async function loadSettingsFromServer() {
   const response = await fetch('/api/settings/get', {
@@ -11,10 +12,40 @@ async function loadSettingsFromServer() {
   return await response.json();
 }
 
+async function loadIntegrationStatus() {
+  const response = await fetch('/api/integrations/status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: USER_EMAIL }),
+  });
+  const status = await response.json();
+
+  if (status.canvas) {
+    document.getElementById('canvas-connect-btn').textContent = 'Connected \u2713';
+  }
+  if (status.schoology) {
+    document.getElementById('schoology-connect-btn').textContent = 'Connected \u2713';
+  }
+  if (status.google) {
+    document.getElementById('google-connect-btn').textContent = 'Connected \u2713';
+  }
+}
+
+async function saveIntegration(provider, field1, field2) {
+  await fetch('/api/integrations/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: USER_EMAIL, provider, field1, field2 }),
+  });
+  integrationsMsg.textContent = "Saved!";
+  setTimeout(() => { integrationsMsg.textContent = ""; }, 2000);
+}
+
 async function init() {
   const settings = await loadSettingsFromServer();
   nameInput.value = settings.displayName || '';
   notifToggle.checked = settings.notifications;
+  await loadIntegrationStatus();
 }
 
 document.getElementById('save-settings-btn').addEventListener('click', async () => {
@@ -29,6 +60,32 @@ document.getElementById('save-settings-btn').addEventListener('click', async () 
   });
   saveMsg.textContent = "Saved!";
   setTimeout(() => { saveMsg.textContent = ""; }, 2000);
+});
+
+document.getElementById('canvas-connect-btn').addEventListener('click', async () => {
+  const domain = document.getElementById('canvas-domain').value.trim();
+  const token = document.getElementById('canvas-token').value.trim();
+  if (!domain || !token) {
+    alert('Please fill in both Canvas fields.');
+    return;
+  }
+  await saveIntegration('canvas', domain, token);
+  document.getElementById('canvas-connect-btn').textContent = 'Connected \u2713';
+});
+
+document.getElementById('schoology-connect-btn').addEventListener('click', async () => {
+  const key = document.getElementById('schoology-key').value.trim();
+  const secret = document.getElementById('schoology-secret').value.trim();
+  if (!key || !secret) {
+    alert('Please fill in both Schoology fields.');
+    return;
+  }
+  await saveIntegration('schoology', key, secret);
+  document.getElementById('schoology-connect-btn').textContent = 'Connected \u2713';
+});
+
+document.getElementById('google-connect-btn').addEventListener('click', () => {
+  alert('This feature is currently unavailable. Sorry!');
 });
 
 init();

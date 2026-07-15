@@ -28,10 +28,14 @@ public class Main {
     private static final Pattern DUE_PATTERN = Pattern.compile("\"due\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern ASSIGNMENT_ID_PATTERN = Pattern.compile("\"assignmentId\"\\s*:\\s*(\\d+)");
     private static final Pattern GRADE_PATTERN = Pattern.compile("\"grade\"\\s*:\\s*([0-9.]+)");
+    private static final Pattern PROVIDER_PATTERN = Pattern.compile("\"provider\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern FIELD1_PATTERN = Pattern.compile("\"field1\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern FIELD2_PATTERN = Pattern.compile("\"field2\"\\s*:\\s*\"([^\"]*)\"");
 
     public static void main(String[] args) throws IOException, SQLException {
         AccountService db = new AccountService();
         ClassService classService = new ClassService();
+        IntegrationService integrationService = new IntegrationService();
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
 
         String pythonCommand = "python";
@@ -54,7 +58,7 @@ public class Main {
 
         server.createContext("/api/login", exchange -> handleLogin(exchange, db));
         server.createContext("/api/register", exchange -> handleRegisterStep1(exchange, db));
-        server.createContext("/api/complete-profile", exchange -> handleRegisterStep2(exchange, db));;
+        server.createContext("/api/complete-profile", exchange -> handleRegisterStep2(exchange, db));
         server.createContext("/api/settings/save", exchange -> handleSettingsSave(exchange, db));
         server.createContext("/api/classes/list", exchange -> handleClassesList(exchange, db, classService));
         server.createContext("/api/classes/add", exchange -> handleClassesAdd(exchange, db, classService));
@@ -64,6 +68,8 @@ public class Main {
         server.createContext("/api/assignments/grade", exchange -> handleAssignmentsGrade(exchange, db, classService));
         server.createContext("/api/assignments/complete", exchange -> handleAssignmentsComplete(exchange, db, classService));
         server.createContext("/api/settings/get", exchange -> handleSettingsGet(exchange, db));
+        server.createContext("/api/integrations/save", exchange -> handleIntegrationsSave(exchange, db, integrationService));
+        server.createContext("/api/integrations/status", exchange -> handleIntegrationsStatus(exchange, db, integrationService));
         server.createContext("/", Main::handleStaticFile);
 
         server.setExecutor(null);
@@ -156,6 +162,40 @@ public class Main {
             int userId = db.getUserIdByEmail(email);
             db.saveSettings(userId, displayName, Boolean.parseBoolean(notificationsStr));
             sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleIntegrationsSave(HttpExchange exchange, AccountService db, IntegrationService integrationService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String provider = getJsonValue(body, PROVIDER_PATTERN);
+        String field1 = getJsonValue(body, FIELD1_PATTERN);
+        String field2 = getJsonValue(body, FIELD2_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            integrationService.saveIntegration(userId, provider, field1, field2);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false,\"message\":\"Failed to save integration.\"}");
+        }
+    }
+
+    private static void handleIntegrationsStatus(HttpExchange exchange, AccountService db, IntegrationService integrationService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            sendJson(exchange, 200, integrationService.getIntegrationStatus(userId).toString());
         } catch (SQLException e) {
             sendJson(exchange, 500, "{\"success\":false}");
         }
