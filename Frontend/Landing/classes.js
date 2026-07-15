@@ -1,7 +1,7 @@
 const grid = document.getElementById('classes-grid');
 
-function renderClasses() {
-  const classes = loadClasses();
+async function renderClasses() {
+  const classes = await loadClasses();
   grid.innerHTML = "";
 
   classes.forEach(cls => {
@@ -26,24 +26,24 @@ function renderClasses() {
   });
 
   grid.querySelectorAll('.remove-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', async (e) => {
       e.preventDefault();
       e.stopPropagation();
-      const cls = getClassById(btn.dataset.id);
+      const cls = await getClassById(btn.dataset.id);
       if (confirm(`Remove ${cls.name}? This will also delete its assignments.`)) {
-        removeClass(btn.dataset.id);
+        await removeClass(btn.dataset.id);
         renderClasses();
       }
     });
   });
 }
- 
-document.getElementById('add-class-btn').addEventListener('click', () => {
+
+document.getElementById('add-class-btn').addEventListener('click', async () => {
   const name = prompt("Class name:");
   if (!name) return;
   const period = prompt("Period (e.g. Period 6):") || "";
-  addClass(name, period);
+  await addClass(name, period);
   renderClasses();
 });
- 
+
 renderClasses();
