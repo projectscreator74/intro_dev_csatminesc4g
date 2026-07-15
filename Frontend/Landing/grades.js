@@ -1,5 +1,5 @@
-function renderGrades() {
-  const classes = loadClasses();
+async function renderGrades() {
+  const classes = await loadClasses();
   const list = document.getElementById('grades-list');
   list.innerHTML = "";
 

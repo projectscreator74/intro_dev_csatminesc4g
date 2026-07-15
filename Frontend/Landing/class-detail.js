@@ -3,8 +3,8 @@ const classId = params.get('id');
 
 const list = document.getElementById('assignments-list');
 
-function renderClass() {
-  const cls = getClassById(classId);
+async function renderClass() {
+  const cls = await getClassById(classId);
   if (!cls) {
     document.querySelector('.page-content').innerHTML = "<p>Class not found. <a href='classes.html'>Back to Classes</a></p>";
     return;
@@ -36,36 +36,36 @@ function renderClass() {
   });
 
   list.querySelectorAll('.assignment-check').forEach(box => {
-    box.addEventListener('change', () => {
-      toggleAssignmentComplete(classId, box.dataset.id);
+    box.addEventListener('change', async () => {
+      await toggleAssignmentComplete(classId, box.dataset.id);
       renderClass();
     });
   });
 
   list.querySelectorAll('.grade-tag').forEach(tag => {
-    tag.addEventListener('click', () => {
+    tag.addEventListener('click', async () => {
       const newGrade = prompt("Enter grade (0-100):");
       if (newGrade === null || newGrade === "") return;
-      setAssignmentGrade(classId, tag.dataset.id, Number(newGrade));
+      await setAssignmentGrade(classId, tag.dataset.id, Number(newGrade));
       renderClass();
     });
   });
 
   list.querySelectorAll('.remove-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       if (confirm("Remove this assignment?")) {
-        removeAssignment(classId, btn.dataset.id);
+        await removeAssignment(classId, btn.dataset.id);
         renderClass();
       }
     });
   });
 }
 
-document.getElementById('add-btn').addEventListener('click', () => {
+document.getElementById('add-btn').addEventListener('click', async () => {
   const title = prompt("Assignment title:");
   if (!title) return;
   const due = prompt("Due date (e.g. Jul 10):") || "";
-  addAssignment(classId, title, due);
+  await addAssignment(classId, title, due);
   renderClass();
 });
 

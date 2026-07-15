@@ -79,7 +79,7 @@ body {
   height: 100%;
   background-color: white;
   border-right: 1px solid whitesmoke;
-  padding: 80px 16px 16px;
+  padding: 40px 16px 16px;
   transition: left 0.25s ease;
   z-index: 20;
 }
@@ -566,6 +566,7 @@ body {
   margin-top: 0;
 }
 
+
 .page {
   display: flex;
   min-height: 100vh;
@@ -873,3 +874,53 @@ select:focus {
   background-color: rgb(219, 234, 254);
   color: rgb(46, 74, 159);
 }
+
+.secondary-btn {
+  width: 100%;
+  margin-top: 12px;
+  background-color: white;
+  color: rgb(46, 74, 159);
+  border: 1px solid rgb(46, 74, 159);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.secondary-btn:hover {
+  background-color: rgb(240, 243, 250);
+}
+
+.login-shell {
+  max-width: 440px;
+}
+
+.login-panel {
+  padding: 36px;
+}
+
+.verification-box {
+  background-color: whitesmoke;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 12px;
+}
+
+.verification-box input {
+  border: 1px solid rgb(216, 218, 227);
+  border-radius: 10px;
+  color: rgb(31, 41, 55);
+  font-size: 18px;
+  letter-spacing: 4px;
+  text-align: center;
+  padding: 12px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.calendar-days .day.selected {
+  background-color: rgb(222, 225, 232);
+  font-weight: 600;
+}
+
