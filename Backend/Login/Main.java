@@ -34,7 +34,7 @@ public class Main {
             Thread.currentThread().interrupt();
         }
 
-        ProcessBuilder pb = new ProcessBuilder(pythonCommand, "-m", "Backend.Login.email_verification");
+        ProcessBuilder pb = new ProcessBuilder("python3","-m", "Backend.Login.email_verification");
         pb.inheritIO();
         Process flaskProcess = pb.start();
 
