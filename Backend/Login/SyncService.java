@@ -4,18 +4,20 @@ import org.json.JSONObject;
 public class SyncService {
 
     private final ClassService classService;
-    private final CanvasService canvasService;
-    private final SchoologyService schoologyService;
+    private final IntegrationService integrationService;
 
-    public SyncService(ClassService classService, CanvasService canvasService, SchoologyService schoologyService) {
+    public SyncService(ClassService classService, IntegrationService integrationService) {
         this.classService = classService;
-        this.canvasService = canvasService;
-        this.schoologyService = schoologyService;
+        this.integrationService = integrationService;
     }
 
-    // ===== Network-calling methods (untestable without live credentials) =====
-
     public void syncCanvas(int userId) throws Exception {
+        JSONObject creds = integrationService.getCredentials(userId, "canvas");
+        if (creds == null) {
+            throw new IllegalStateException("Canvas is not connected for this user.");
+        }
+
+        CanvasService canvasService = new CanvasService(creds.getString("field1"), creds.getString("field2"));
         JSONArray courses = canvasService.getCourses();
 
         for (int i = 0; i < courses.length(); i++) {
@@ -30,6 +32,12 @@ public class SyncService {
     }
 
     public void syncSchoology(int userId, String schoologyCourseId) throws Exception {
+        JSONObject creds = integrationService.getCredentials(userId, "schoology");
+        if (creds == null) {
+            throw new IllegalStateException("Schoology is not connected for this user.");
+        }
+
+        SchoologyService schoologyService = new SchoologyService(creds.getString("field1"), creds.getString("field2"));
         JSONArray sections = schoologyService.getSections(schoologyCourseId);
 
         for (int i = 0; i < sections.length(); i++) {
@@ -42,8 +50,6 @@ public class SyncService {
             }
         }
     }
-
-    // ===== Field-extraction methods (fully testable with fake JSON, no network needed) =====
 
     public int syncCanvasCourse(int userId, JSONObject course) throws Exception {
         String extId = "canvas-" + course.getInt("id");

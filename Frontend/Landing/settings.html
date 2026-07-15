@@ -52,6 +52,39 @@
       <button class="add-btn" id="save-settings-btn">Save</button>
       <span class="save-msg" id="save-msg"></span>
     </section>
+  
+    <section class="settings-card">
+      <h2>Integrations</h2>
+
+      <div class="form-row">
+        <label for="canvas-domain">Canvas Domain</label>
+        <input type="text" id="canvas-domain" placeholder="yourschool.instructure.com">
+        <label for="canvas-token" style="margin-top: 10px;">Canvas Access Token</label>
+        <input type="text" id="canvas-token" placeholder="Paste your Canvas token">
+        <button class="add-btn" id="canvas-connect-btn" style="margin-top: 10px;">Connect Canvas</button>
+      </div>
+
+      <div class="form-row" style="margin-top: 24px;">
+        <label for="schoology-key">Schoology Consumer Key</label>
+        <input type="text" id="schoology-key" placeholder="Paste your Schoology consumer key">
+        <label for="schoology-secret" style="margin-top: 10px;">Schoology Consumer Secret</label>
+        <input type="text" id="schoology-secret" placeholder="Paste your Schoology consumer secret">
+        <button class="add-btn" id="schoology-connect-btn" style="margin-top: 10px;">Connect Schoology</button>
+      </div>
+
+      <div class="form-row" style="margin-top: 24px;">
+        <label>Google Calendar</label>
+        <button class="add-btn" id="google-connect-btn" style="margin-top: 10px;">Connect Google Calendar</button>
+      </div>
+
+      <span class="save-msg" id="integrations-msg"></span>
+    </section>
+  
+    <section class="settings-card">
+      <h2 style="color: rgb(192, 57, 43);">Account</h2>
+      <p class="subtitle" style="margin-bottom: 12px;">For testing purposes. This permanently deletes your account and all associated data.</p>
+      <button class="danger-btn" id="delete-account-btn">Delete Account and Reset Data</button>
+    </section>
   </main>
 
   <script src="utils.js"></script>
@@ -61,6 +94,8 @@
   <script src="auth.js"></script>
 </body>
 </html>
+
+
 
 
 

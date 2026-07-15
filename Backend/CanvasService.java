@@ -12,9 +12,9 @@ public class CanvasService {
     private final String token;
     private final HttpClient client;
 
-    public CanvasService() {
-        this.domain = System.getenv("CANVAS_DOMAIN");
-        this.token = System.getenv("CANVAS_TOKEN");
+    public CanvasService(String domain, String token) {
+        this.domain = domain;
+        this.token = token;
         this.client = HttpClient.newHttpClient();
     }
 

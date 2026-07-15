@@ -28,10 +28,12 @@ const monthNames = [
 const today = new Date();
 let currentYear = today.getFullYear();
 let currentMonth = today.getMonth();
+let selectedCell = null;
 
 function buildCalendar(year, month) {
   monthTitle.textContent = `${monthNames[month]} ${year}`;
   daysContainer.innerHTML = "";
+  selectedCell = null;
 
   ["S", "M", "T", "W", "T", "F", "S"].forEach(label => {
     const nameEl = document.createElement('div');
@@ -57,6 +59,19 @@ function buildCalendar(year, month) {
     if (isSameDate(day, month, year, today)) {
       cell.classList.add('today');
     }
+
+    cell.addEventListener('click', () => {
+      if (selectedCell === cell) {
+        cell.classList.remove('selected');
+        selectedCell = null;
+      } else {
+        if (selectedCell) {
+          selectedCell.classList.remove('selected');
+        }
+        cell.classList.add('selected');
+        selectedCell = cell;
+      }
+    });
 
     daysContainer.appendChild(cell);
   }

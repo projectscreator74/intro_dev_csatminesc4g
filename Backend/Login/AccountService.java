@@ -94,5 +94,27 @@ public class AccountService {
             stmt.setInt(3, userId);
             stmt.executeUpdate();
         }
-    }   
+    }
+
+    public void deleteAccount(int userId) throws SQLException {
+        String[] deleteStatements = {
+            "DELETE FROM assignment WHERE user_id = ?",
+            "DELETE FROM event WHERE user_id = ?",
+            "DELETE FROM exam WHERE user_id = ?",
+            "DELETE FROM goals WHERE user_id = ?",
+            "DELETE FROM notifications WHERE user_id = ?",
+            "DELETE FROM file WHERE user_id = ?",
+            "DELETE FROM integration_credentials WHERE user_id = ?",
+            "DELETE FROM class WHERE user_id = ?",
+            "DELETE FROM profile WHERE user_id = ?",
+            "DELETE FROM account WHERE user_id = ?"
+        };
+
+        for (String sql : deleteStatements) {
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, userId);
+                stmt.executeUpdate();
+            }
+        }
+    }
 }
