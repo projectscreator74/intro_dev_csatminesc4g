@@ -38,12 +38,17 @@ public class Main {
     private static final Pattern TYPE_PATTERN = Pattern.compile("\"type\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern CATEGORY_PATTERN = Pattern.compile("\"category\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern NOTIFICATION_ID_PATTERN = Pattern.compile("\"notificationId\"\\s*:\\s*(\\d+)");
+    private static final Pattern EVENT_ID_PATTERN = Pattern.compile("\"eventId\"\\s*:\\s*(\\d+)");
+    private static final Pattern LOCATION_PATTERN = Pattern.compile("\"location\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern START_TIME_PATTERN = Pattern.compile("\"startTime\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern END_TIME_PATTERN = Pattern.compile("\"endTime\"\\s*:\\s*\"([^\"]*)\"");
 
     public static void main(String[] args) throws IOException, SQLException {
         AccountService db = new AccountService();
         ClassService classService = new ClassService();
         IntegrationService integrationService = new IntegrationService();
         GoalService goalService = new GoalService();
+        EventService eventService = new EventService();
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
 
         String[] candidates = {"python", "py", "python3"};
@@ -102,6 +107,10 @@ public class Main {
         server.createContext("/api/notifications/read", exchange -> handleNotificationsRead(exchange, db, goalService));
         server.createContext("/api/notifications/dismiss", exchange -> handleNotificationsDismiss(exchange, db, goalService));
         server.createContext("/api/notifications/clear", exchange -> handleNotificationsClear(exchange, db, goalService));
+        server.createContext("/api/events/list", exchange -> handleEventsList(exchange, db, eventService));
+        server.createContext("/api/events/add", exchange -> handleEventsAdd(exchange, db, eventService));
+        server.createContext("/api/events/update", exchange -> handleEventsUpdate(exchange, db, eventService));
+        server.createContext("/api/events/remove", exchange -> handleEventsRemove(exchange, db, eventService));
         server.createContext("/", Main::handleStaticFile);
 
         server.setExecutor(null);
@@ -625,13 +634,91 @@ public class Main {
         }
     }
 
+    private static void handleEventsList(HttpExchange exchange, AccountService db, EventService eventService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            sendJson(exchange, 200, eventService.getEvents(userId).toString());
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleEventsAdd(HttpExchange exchange, AccountService db, EventService eventService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String title = getJsonValue(body, TITLE_PATTERN);
+        String notes = getJsonValue(body, NOTES_PATTERN);
+        String location = getJsonValue(body, LOCATION_PATTERN);
+        String startTime = getJsonValue(body, START_TIME_PATTERN);
+        String endTime = getJsonValue(body, END_TIME_PATTERN);
+        String classIdStr = getJsonValue(body, CLASS_ID_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            Integer classId = classIdStr.isBlank() ? null : Integer.parseInt(classIdStr);
+            int eventId = eventService.addEvent(userId, title, notes, location, startTime, endTime, classId);
+            sendJson(exchange, 200, "{\"success\":true,\"eventId\":" + eventId + "}");
+        } catch (SQLException | NumberFormatException e) {
+            e.printStackTrace();
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleEventsUpdate(HttpExchange exchange, AccountService db, EventService eventService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String eventIdStr = getJsonValue(body, EVENT_ID_PATTERN);
+        String title = getJsonValue(body, TITLE_PATTERN);
+        String notes = getJsonValue(body, NOTES_PATTERN);
+        String location = getJsonValue(body, LOCATION_PATTERN);
+        String startTime = getJsonValue(body, START_TIME_PATTERN);
+        String endTime = getJsonValue(body, END_TIME_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            int eventId = Integer.parseInt(eventIdStr);
+            eventService.updateEvent(eventId, userId, title, notes, location, startTime, endTime);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException | NumberFormatException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleEventsRemove(HttpExchange exchange, AccountService db, EventService eventService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String eventIdStr = getJsonValue(body, EVENT_ID_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            int eventId = Integer.parseInt(eventIdStr);
+            eventService.deleteEvent(eventId, userId);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException | NumberFormatException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
     private static void handleStaticFile(HttpExchange exchange) throws IOException {
-        
         if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendText(exchange, 405, "Method not allowed", "text/plain");
             return;
         }
-
         Path frontendRoot = Path.of("Frontend", "Landing").toAbsolutePath().normalize();
         URI requestUri = exchange.getRequestURI();
         String requestedPath = requestUri.getPath().equals("/") ? "/login.html" : requestUri.getPath();
@@ -640,14 +727,12 @@ public class Main {
             sendText(exchange, 404, "Not found", "text/plain");
             return;
         }
-
         byte[] fileBytes = Files.readAllBytes(filePath);
         String ct = contentType(filePath);
         exchange.getResponseHeaders().set("Content-Type", ct);
         if (ct.startsWith("text/html") || ct.startsWith("application/javascript") || ct.startsWith("text/css")) {
             exchange.getResponseHeaders().set("Cache-Control", "no-store");
         }
-
         exchange.sendResponseHeaders(200, fileBytes.length);
         try (OutputStream output = exchange.getResponseBody()) {
             output.write(fileBytes);
