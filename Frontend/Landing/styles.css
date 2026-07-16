@@ -997,3 +997,60 @@ select:focus {
   position: relative;
   top: 12px;
 }
+
+.goals-files-grid {
+  max-width: 900px;
+}
+
+.goals-files-grid {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.goals-files-grid .assignments-card {
+  flex: 1;
+  min-width: 280px;
+  margin-top: 0;
+}
+
+.item-card {
+  background-color: whitesmoke;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.item-card h3 {
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.item-card p {
+  font-size: 13px;
+  color: rgb(86, 100, 114);
+  margin-bottom: 2px;
+}
+
+.item-card-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.form-row select,
+.form-row textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid whitesmoke;
+  border-radius: 8px;
+  font-size: 14px;
+  color: rgb(46, 74, 159);
+  font-family: inherit;
+}
+
+.form-row textarea {
+  resize: vertical;
+  min-height: 60px;
+}
