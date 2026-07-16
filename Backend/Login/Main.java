@@ -38,16 +38,26 @@ public class Main {
         IntegrationService integrationService = new IntegrationService();
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
 
-        String pythonCommand = "python";
-        try {
-            new ProcessBuilder(pythonCommand, "--version").start().waitFor();
-        } catch (IOException e) {
-            pythonCommand = "python3";
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        String[] candidates = {"python", "py", "python3"};
+        String pythonCommand = null;
+
+        for (String candidate : candidates) {
+            try {
+                new ProcessBuilder(candidate, "--version").start().waitFor();
+                pythonCommand = candidate;
+                break;
+            } catch (IOException e) {
+                // try next candidate
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
 
-        ProcessBuilder pb = new ProcessBuilder("python3","-m", "Backend.Login.email_verification");
+        if (pythonCommand == null) {
+            throw new IOException("Could not find a working Python installation (tried: python, py, python3).");
+        }
+
+        ProcessBuilder pb = new ProcessBuilder(pythonCommand, "-m", "Backend.Login.email_verification");
         pb.inheritIO();
         Process flaskProcess = pb.start();
 
