@@ -64,6 +64,8 @@
         <label for="canvas-token" style="margin-top: 10px;">Canvas Access Token</label>
         <input type="text" id="canvas-token" placeholder="Paste your Canvas token">
         <button class="add-btn" id="canvas-connect-btn" style="margin-top: 10px;">Connect Canvas</button>
+        <button class="secondary-btn" id="canvas-sync-now-btn" type="button" style="margin-top: 8px;">Sync Now</button>
+        <span class="save-msg" id="canvas-sync-msg"></span>
       </div>
 
       <div class="form-row" style="margin-top: 24px;">
@@ -71,7 +73,11 @@
         <input type="text" id="schoology-key" placeholder="Paste your Schoology consumer key">
         <label for="schoology-secret" style="margin-top: 10px;">Schoology Consumer Secret</label>
         <input type="text" id="schoology-secret" placeholder="Paste your Schoology consumer secret">
+        <label for="schoology-course-id" style="margin-top: 10px;">Schoology Course ID</label>
+        <input type="text" id="schoology-course-id" placeholder="The course ID to sync">
         <button class="add-btn" id="schoology-connect-btn" style="margin-top: 10px;">Connect Schoology</button>
+        <button class="secondary-btn" id="schoology-sync-now-btn" type="button" style="margin-top: 8px;">Sync Now</button>
+        <span class="save-msg" id="schoology-sync-msg"></span>
       </div>
 
       <div class="form-row" style="margin-top: 24px;">
@@ -96,9 +102,3 @@
   <script src="auth.js"></script>
 </body>
 </html>
-
-
-
-
-
-

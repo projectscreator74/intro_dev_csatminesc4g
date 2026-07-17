@@ -42,6 +42,8 @@ public class Main {
     private static final Pattern LOCATION_PATTERN = Pattern.compile("\"location\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern START_TIME_PATTERN = Pattern.compile("\"startTime\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern END_TIME_PATTERN = Pattern.compile("\"endTime\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern SCHOOLOGY_COURSE_ID_PATTERN = Pattern.compile("\"schoologyCourseId\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern FIELD3_PATTERN = Pattern.compile("\"field3\"\\s*:\\s*\"([^\"]*)\"");
 
     public static void main(String[] args) throws IOException, SQLException {
         AccountService db = new AccountService();
@@ -49,6 +51,7 @@ public class Main {
         IntegrationService integrationService = new IntegrationService();
         GoalService goalService = new GoalService();
         EventService eventService = new EventService();
+        SyncService syncService = new SyncService(classService, integrationService);
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
 
         String[] candidates = {"python", "py", "python3"};
@@ -111,10 +114,36 @@ public class Main {
         server.createContext("/api/events/add", exchange -> handleEventsAdd(exchange, db, eventService));
         server.createContext("/api/events/update", exchange -> handleEventsUpdate(exchange, db, eventService));
         server.createContext("/api/events/remove", exchange -> handleEventsRemove(exchange, db, eventService));
+        server.createContext("/api/sync/canvas", exchange -> handleSyncCanvas(exchange, db, syncService));
+        server.createContext("/api/sync/schoology", exchange -> handleSyncSchoology(exchange, db, syncService));
         server.createContext("/", Main::handleStaticFile);
 
         server.setExecutor(null);
         server.start();
+
+        java.util.concurrent.ScheduledExecutorService scheduler = java.util.concurrent.Executors.newSingleThreadScheduledExecutor();
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                for (int uid : integrationService.getAllConnectedUserIds("canvas")) {
+                    try {
+                        syncService.syncCanvas(uid);
+                        System.out.println("Auto-synced Canvas for user " + uid);
+                    } catch (Exception e) {
+                        System.out.println("Canvas auto-sync failed for user " + uid + ": " + e.getMessage());
+                    }
+                }
+                for (int uid : integrationService.getAllConnectedUserIds("schoology")) {
+                    try {
+                        syncService.syncSchoology(uid, null);
+                        System.out.println("Auto-synced Schoology for user " + uid);
+                    } catch (Exception e) {
+                        System.out.println("Schoology auto-sync failed for user " + uid + ": " + e.getMessage());
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, 30, 30, java.util.concurrent.TimeUnit.SECONDS);
 
         System.out.println("StudyStack is running at http://localhost:" + PORT + "/login.html");
     }
@@ -218,9 +247,10 @@ public class Main {
         String provider = getJsonValue(body, PROVIDER_PATTERN);
         String field1 = getJsonValue(body, FIELD1_PATTERN);
         String field2 = getJsonValue(body, FIELD2_PATTERN);
+        String field3 = getJsonValue(body, FIELD3_PATTERN);
         try {
             int userId = db.getUserIdByEmail(email);
-            integrationService.saveIntegration(userId, provider, field1, field2);
+            integrationService.saveIntegration(userId, provider, field1, field2, field3);
             sendJson(exchange, 200, "{\"success\":true}");
         } catch (SQLException e) {
             sendJson(exchange, 500, "{\"success\":false,\"message\":\"Failed to save integration.\"}");
@@ -714,6 +744,46 @@ public class Main {
         }
     }
 
+    
+    private static void handleSyncCanvas(HttpExchange exchange, AccountService db, SyncService syncService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            syncService.syncCanvas(userId);
+            sendJson(exchange, 200, "{\"success\":true,\"message\":\"Canvas sync completed.\"}");
+        } catch (IllegalStateException e) {
+            sendJson(exchange, 400, "{\"success\":false,\"message\":\"" + e.getMessage() + "\"}");
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendJson(exchange, 500, "{\"success\":false,\"message\":\"Canvas sync failed.\"}");
+        }
+    }
+
+    private static void handleSyncSchoology(HttpExchange exchange, AccountService db, SyncService syncService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String schoologyCourseId = getJsonValue(body, SCHOOLOGY_COURSE_ID_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            syncService.syncSchoology(userId, schoologyCourseId);
+            sendJson(exchange, 200, "{\"success\":true,\"message\":\"Schoology sync completed.\"}");
+        } catch (IllegalStateException e) {
+            sendJson(exchange, 400, "{\"success\":false,\"message\":\"" + e.getMessage() + "\"}");
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendJson(exchange, 500, "{\"success\":false,\"message\":\"Schoology sync failed.\"}");
+        }
+    }
+
     private static void handleStaticFile(HttpExchange exchange) throws IOException {
         if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendText(exchange, 405, "Method not allowed", "text/plain");
@@ -771,3 +841,5 @@ public class Main {
         return "application/octet-stream";
     }
 }
+
+

@@ -2,14 +2,23 @@ const classSelect = document.getElementById('class-select');
 const list = document.getElementById('all-assignments-list');
 
 async function renderAssignments() {
+  const previousSelection = classSelect.value;
   const classes = await loadClasses();
 
+  const options = classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   classSelect.innerHTML = classes.length
-    ? classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('')
+    ? `<option value="">All Classes</option>` + options
     : `<option value="">Add a class first</option>`;
+
+  if ([...classSelect.options].some(opt => opt.value === previousSelection)) {
+    classSelect.value = previousSelection;
+  }
+
+  const selectedClassId = classSelect.value;
 
   const all = [];
   classes.forEach(cls => {
+    if (selectedClassId && String(cls.id) !== selectedClassId) return;
     cls.assignments.forEach(a => {
       all.push({ ...a, className: cls.name, classId: cls.id });
     });
@@ -70,10 +79,14 @@ async function renderAssignments() {
   });
 }
 
+classSelect.addEventListener('change', () => {
+  renderAssignments();
+});
+
 document.getElementById('add-assignment-btn').addEventListener('click', async () => {
   const classId = classSelect.value;
   if (!classId) {
-    alert("Add a class first from the Classes page.");
+    alert("Select a specific class first (not \"All Classes\") to add an assignment.");
     return;
   }
   const title = prompt("Assignment title:");

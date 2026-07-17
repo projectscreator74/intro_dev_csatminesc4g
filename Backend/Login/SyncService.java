@@ -31,14 +31,22 @@ public class SyncService {
         }
     }
 
-    public void syncSchoology(int userId, String schoologyCourseId) throws Exception {
+    public void syncSchoology(int userId, String schoologyCourseIdOverride) throws Exception {
         JSONObject creds = integrationService.getCredentials(userId, "schoology");
         if (creds == null) {
             throw new IllegalStateException("Schoology is not connected for this user.");
         }
 
+        String courseId = (schoologyCourseIdOverride != null && !schoologyCourseIdOverride.isBlank())
+                ? schoologyCourseIdOverride
+                : creds.getString("field3");
+
+        if (courseId == null || courseId.isBlank()) {
+            throw new IllegalStateException("No Schoology course ID is set for this user.");
+        }
+
         SchoologyService schoologyService = new SchoologyService(creds.getString("field1"), creds.getString("field2"));
-        JSONArray sections = schoologyService.getSections(schoologyCourseId);
+        JSONArray sections = schoologyService.getSections(courseId);
 
         for (int i = 0; i < sections.length(); i++) {
             JSONObject section = sections.getJSONObject(i);
@@ -61,7 +69,14 @@ public class SyncService {
         String extId = "canvas-" + assignment.getInt("id");
         String title = assignment.getString("name");
         double totalPoints = assignment.optDouble("points_possible", 0);
-        classService.syncAssignment(userId, classId, extId, title, totalPoints);
+
+        String dueAt = assignment.optString("due_at", null);
+        String normalizedDue = null;
+        if (dueAt != null && !dueAt.isBlank()) {
+            normalizedDue = dueAt.replace("T", " ").replace("Z", "");
+        }
+
+        classService.syncAssignment(userId, classId, extId, title, totalPoints, normalizedDue);
     }
 
     public int syncSchoologySection(int userId, JSONObject section) throws Exception {
@@ -74,6 +89,8 @@ public class SyncService {
         String extId = "schoology-" + assignment.getInt("id");
         String title = assignment.getString("title");
         double totalPoints = assignment.optDouble("max_points", 0);
-        classService.syncAssignment(userId, classId, extId, title, totalPoints);
+        String due = assignment.optString("due", null);
+
+        classService.syncAssignment(userId, classId, extId, title, totalPoints, due);
     }
 }
