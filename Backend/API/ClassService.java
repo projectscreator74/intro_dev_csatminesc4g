@@ -3,8 +3,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Timestamp;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -16,29 +15,31 @@ public class ClassService {
         conn = DriverManager.getConnection(url, "postgres", "devpassword123");
     }
 
-    // ===== Canvas sync methods (existing) =====
+    // ===== Generic sync methods (used by Canvas and Schoology alike) =====
 
-    public void syncCourse(int userId, JSONObject canvasCourse) throws SQLException {
-        String canvasId = String.valueOf(canvasCourse.getInt("id"));
-        String name = canvasCourse.getString("name");
-
+    public int syncCourse(int userId, String extId, String name) throws SQLException {
         String checkSql = "SELECT class_id FROM class WHERE ext_id = ? AND user_id = ?";
         try (PreparedStatement check = conn.prepareStatement(checkSql)) {
-            check.setString(1, canvasId);
+            check.setString(1, extId);
             check.setInt(2, userId);
             ResultSet rs = check.executeQuery();
             if (rs.next()) {
-                return;
+                return rs.getInt("class_id");
             }
         }
 
-        String insertSql = "INSERT INTO class (user_id, class_name, ext_id) VALUES (?, ?, ?)";
+        String insertSql = "INSERT INTO class (user_id, class_name, ext_id) VALUES (?, ?, ?) RETURNING class_id";
         try (PreparedStatement insert = conn.prepareStatement(insertSql)) {
             insert.setInt(1, userId);
             insert.setString(2, name);
-            insert.setString(3, canvasId);
-            insert.executeUpdate();
+            insert.setString(3, extId);
+            ResultSet rs = insert.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("class_id");
+            }
         }
+
+        throw new SQLException("Failed to sync course.");
     }
 
     public int getClassIdByExtId(String extId, int userId) throws SQLException {
@@ -54,14 +55,11 @@ public class ClassService {
         return -1;
     }
 
-    public void syncAssignment(int userId, int classId, JSONObject canvasAssignment) throws SQLException {
-        String canvasId = String.valueOf(canvasAssignment.getInt("id"));
-        String title = canvasAssignment.getString("name");
-        double totalPoints = canvasAssignment.optDouble("points_possible", 0);
-
+    public void syncAssignment(int userId, int classId, String extId, String title, double totalPoints)
+            throws SQLException {
         String checkSql = "SELECT assignment_id FROM assignment WHERE ext_id = ? AND user_id = ?";
         try (PreparedStatement check = conn.prepareStatement(checkSql)) {
-            check.setString(1, canvasId);
+            check.setString(1, extId);
             check.setInt(2, userId);
             ResultSet rs = check.executeQuery();
             if (rs.next()) {
@@ -75,12 +73,12 @@ public class ClassService {
             insert.setInt(2, classId);
             insert.setString(3, title);
             insert.setDouble(4, totalPoints);
-            insert.setString(5, canvasId);
+            insert.setString(5, extId);
             insert.executeUpdate();
         }
     }
 
-    // ===== Frontend-facing CRUD methods (new) =====
+    // ===== Frontend-facing CRUD methods =====
 
     public JSONArray getClassesWithAssignments(int userId) throws SQLException {
         JSONArray result = new JSONArray();
@@ -105,16 +103,35 @@ public class ClassService {
     }
 
     private JSONArray getAssignmentsForClass(int classId) throws SQLException {
+        JSONArray assignments = new JSONArray();
         String sql = "SELECT assignment_id, title, timedate, due_label, user_score, completed FROM assignment WHERE class_id = ? ORDER BY assignment_id";
 
-        String dueLabel = rs.getString("due_label");
-        
-        if (dueLabel != null && !dueLabel.isBlank()) {
-            a.put("due", dueLabel);
-        } else {
-            java.sql.Timestamp ts = rs.getTimestamp("timedate");
-            a.put("due", ts == null ? "" : ts.toString());
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, classId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                JSONObject a = new JSONObject();
+                a.put("id", rs.getInt("assignment_id"));
+                a.put("title", rs.getString("title"));
+
+                String dueLabel = rs.getString("due_label");
+                if (dueLabel != null && !dueLabel.isBlank()) {
+                    a.put("due", dueLabel);
+                } else {
+                    Timestamp ts = rs.getTimestamp("timedate");
+                    a.put("due", ts == null ? "" : ts.toString());
+                }
+
+                double score = rs.getDouble("user_score");
+                a.put("grade", rs.wasNull() ? JSONObject.NULL : score);
+
+                a.put("completed", rs.getBoolean("completed"));
+                assignments.put(a);
+            }
         }
+
+        return assignments;
     }
 
     public int addClass(int userId, String name, String period) throws SQLException {
@@ -149,7 +166,6 @@ public class ClassService {
 
     public int addAssignment(int userId, int classId, String title, String due) throws SQLException {
         String sql = "INSERT INTO assignment (user_id, class_id, title, due_label, total_points, completed) VALUES (?, ?, ?, ?, 100, false) RETURNING assignment_id";
-
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             stmt.setInt(2, classId);

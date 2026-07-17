@@ -65,11 +65,15 @@ public class Main {
         server.createContext("/api/classes/add", exchange -> handleClassesAdd(exchange, db, classService));
         server.createContext("/api/classes/remove", exchange -> handleClassesRemove(exchange, db, classService));
         server.createContext("/api/assignments/add", exchange -> handleAssignmentsAdd(exchange, db, classService));
-        server.createContext("/api/assignments/remove", exchange -> handleAssignmentsRemove(exchange, db, classService));
+        server.createContext("/api/assignments/remove",
+                exchange -> handleAssignmentsRemove(exchange, db, classService));
         server.createContext("/api/assignments/grade", exchange -> handleAssignmentsGrade(exchange, db, classService));
-        server.createContext("/api/assignments/complete", exchange -> handleAssignmentsComplete(exchange, db, classService));
-        server.createContext("/api/integrations/save", exchange -> handleIntegrationsSave(exchange, db, integrationService));
-        server.createContext("/api/integrations/status", exchange -> handleIntegrationsStatus(exchange, db, integrationService));
+        server.createContext("/api/assignments/complete",
+                exchange -> handleAssignmentsComplete(exchange, db, classService));
+        server.createContext("/api/integrations/save",
+                exchange -> handleIntegrationsSave(exchange, db, integrationService));
+        server.createContext("/api/integrations/status",
+                exchange -> handleIntegrationsStatus(exchange, db, integrationService));
         server.createContext("/api/account/delete", exchange -> handleAccountDelete(exchange, db));
         server.createContext("/", Main::handleStaticFile);
 
@@ -111,6 +115,9 @@ public class Main {
             int userId = db.createAccount(email, password);
             sendJson(exchange, 200, "{\"success\":true,\"userId\":" + userId + "}");
         } catch (SQLException e) {
+            e.printStackTrace();
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(500, 0);
             sendJson(exchange, 500,
                     "{\"success\":false,\"message\":\"Registration failed. Email may already be in use.\"}");
         }
@@ -169,7 +176,8 @@ public class Main {
         }
     }
 
-    private static void handleIntegrationsSave(HttpExchange exchange, AccountService db, IntegrationService integrationService) throws IOException {
+    private static void handleIntegrationsSave(HttpExchange exchange, AccountService db,
+            IntegrationService integrationService) throws IOException {
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendJson(exchange, 405, "{\"success\":false}");
             return;
@@ -188,7 +196,8 @@ public class Main {
         }
     }
 
-    private static void handleIntegrationsStatus(HttpExchange exchange, AccountService db, IntegrationService integrationService) throws IOException {
+    private static void handleIntegrationsStatus(HttpExchange exchange, AccountService db,
+            IntegrationService integrationService) throws IOException {
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendJson(exchange, 405, "{\"success\":false}");
             return;
@@ -224,7 +233,8 @@ public class Main {
         }
     }
 
-    private static void handleClassesList(HttpExchange exchange, AccountService db, ClassService classService) throws IOException {
+    private static void handleClassesList(HttpExchange exchange, AccountService db, ClassService classService)
+            throws IOException {
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendJson(exchange, 405, "{\"success\":false}");
             return;
@@ -244,7 +254,8 @@ public class Main {
         }
     }
 
-    private static void handleClassesAdd(HttpExchange exchange, AccountService db, ClassService classService) throws IOException {
+    private static void handleClassesAdd(HttpExchange exchange, AccountService db, ClassService classService)
+            throws IOException {
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendJson(exchange, 405, "{\"success\":false}");
             return;
@@ -267,7 +278,8 @@ public class Main {
         }
     }
 
-    private static void handleClassesRemove(HttpExchange exchange, AccountService db, ClassService classService) throws IOException {
+    private static void handleClassesRemove(HttpExchange exchange, AccountService db, ClassService classService)
+            throws IOException {
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendJson(exchange, 405, "{\"success\":false}");
             return;
@@ -285,7 +297,8 @@ public class Main {
         }
     }
 
-    private static void handleAssignmentsAdd(HttpExchange exchange, AccountService db, ClassService classService) throws IOException {
+    private static void handleAssignmentsAdd(HttpExchange exchange, AccountService db, ClassService classService)
+            throws IOException {
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendJson(exchange, 405, "{\"success\":false}");
             return;
@@ -306,7 +319,8 @@ public class Main {
         }
     }
 
-    private static void handleAssignmentsRemove(HttpExchange exchange, AccountService db, ClassService classService) throws IOException {
+    private static void handleAssignmentsRemove(HttpExchange exchange, AccountService db, ClassService classService)
+            throws IOException {
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendJson(exchange, 405, "{\"success\":false}");
             return;
@@ -324,7 +338,8 @@ public class Main {
         }
     }
 
-    private static void handleAssignmentsGrade(HttpExchange exchange, AccountService db, ClassService classService) throws IOException {
+    private static void handleAssignmentsGrade(HttpExchange exchange, AccountService db, ClassService classService)
+            throws IOException {
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendJson(exchange, 405, "{\"success\":false}");
             return;
@@ -344,7 +359,8 @@ public class Main {
         }
     }
 
-    private static void handleAssignmentsComplete(HttpExchange exchange, AccountService db, ClassService classService) throws IOException {
+    private static void handleAssignmentsComplete(HttpExchange exchange, AccountService db, ClassService classService)
+            throws IOException {
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendJson(exchange, 405, "{\"success\":false}");
             return;
@@ -396,12 +412,8 @@ public class Main {
         sendText(exchange, statusCode, json, "application/json");
     }
 
-<<<<<<< HEAD
     private static void sendText(HttpExchange exchange, int statusCode, String text, String contentType)
             throws IOException {
-=======
-    private static void sendText(HttpExchange exchange, int statusCode, String text, String contentType) throws IOException {
->>>>>>> 181eda9625af506d0f4e088bdbf901e6e353f5f3
         byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", contentType + "; charset=utf-8");
         exchange.sendResponseHeaders(statusCode, bytes.length);
