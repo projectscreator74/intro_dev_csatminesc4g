@@ -2,156 +2,37 @@
 <html>
 <head>
   <title>StudyStack Goals and Files</title>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background-color: #eeeeee;
-    }
-
-    .page {
-      display: flex;
-      min-height: 100vh;
-    }
-
-    .sidebar {
-      width: 200px;
-      background-color: #bbbbbb;
-      padding: 20px;
-    }
-
-    .logo {
-      background-color: #dddddd;
-      padding: 15px;
-      border-radius: 10px;
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-
-    .nav {
-      background-color: #dddddd;
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-    }
-
-    .selected {
-      background-color: #899cff;
-    }
-
-    .main {
-      flex: 1;
-      padding: 25px;
-    }
-
-    .big-box {
-      background-color: #b5b5b5;
-      border-radius: 35px;
-      padding: 25px;
-      display: flex;
-      gap: 25px;
-    }
-
-    .panel {
-      background-color: #0737b8;
-      color: white;
-      border-radius: 30px;
-      padding: 25px;
-      width: 50%;
-      min-height: 450px;
-    }
-
-    .panel h2 {
-      text-align: center;
-    }
-
-    .top-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    button {
-      border: none;
-      border-radius: 8px;
-      padding: 8px 10px;
-      cursor: pointer;
-      margin: 3px;
-    }
-
-    .gray-button {
-      background-color: #d1d1d1;
-    }
-
-    .item {
-      background-color: rgba(255, 255, 255, 0.15);
-      padding: 15px;
-      border-radius: 15px;
-      margin-bottom: 15px;
-    }
-
-    .edit {
-      background-color: #cfe3ff;
-    }
-
-    .complete {
-      background-color: #c9ffd4;
-    }
-
-    .delete {
-      background-color: #ffcccc;
-    }
-
-    .form-box {
-      display: none;
-      background-color: white;
-      color: black;
-      padding: 20px;
-      border-radius: 20px;
-      margin-bottom: 20px;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      margin-bottom: 12px;
-    }
-
-    @media screen and (max-width: 800px) {
-      .page {
-        flex-direction: column;
-      }
-
-      .sidebar {
-        width: auto;
-      }
-
-      .big-box {
-        flex-direction: column;
-      }
-
-      .panel {
-        width: auto;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-  <div class="page">
-    <div class="sidebar">
-      <div class="logo">StudyStack</div>
-      <div class="nav">Dashboard</div>
-      <div class="nav">Assignments</div>
-      <div class="nav">Calendar</div>
-      <div class="nav selected">Goals and Files</div>
-      <div class="nav">Notifications</div>
-      <div class="nav">Settings</div>
+  <header class="navbar">
+    <button id="menu-toggle" class="btn-icon" aria-label="Open menu">
+      <span class="nav-arrow">&#9654;</span>
+    </button>
+    <div class="logo">
+      <a href="index.html" class="logo-wrap">
+        <span class="logo-badge">S</span>
+        <span class="logo-name">StudyStack</span>
+      </a>
     </div>
+  </header>
 
-    <div class="main">
+  <nav id="side-menu" class="side-menu">
+    <ul>
+      <li><a href="index.html">Dashboard</a></li>
+      <li><a href="classes.html">Classes</a></li>
+      <li><a href="assignments.html">Assignments</a></li>
+      <li><a href="grades.html">Grades</a></li>
+      <li><a href="goalsandfiles.html" class="active">Goals and Files</a></li>
+      <li><a href="notifications.html">Notifications</a></li>
+      <li><a href="settings.html">Settings</a></li>
+    </ul>
+  </nav>
+
+  <div id="backdrop" class="backdrop"></div>
+
+  <main class="page-content">
       <h1>Goals and Files</h1>
 
       <div class="big-box">
@@ -221,7 +102,8 @@
       </div>
     </div>
   </div>
-
+  </main>
+  <script src="sidebar.js"></script>
   <script>
     var goals = [
       {
