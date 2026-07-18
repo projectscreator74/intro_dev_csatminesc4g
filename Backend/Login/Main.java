@@ -44,6 +44,7 @@ public class Main {
     private static final Pattern END_TIME_PATTERN = Pattern.compile("\"endTime\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern SCHOOLOGY_COURSE_ID_PATTERN = Pattern.compile("\"schoologyCourseId\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern FIELD3_PATTERN = Pattern.compile("\"field3\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern BENCHMARK_PATTERN = Pattern.compile("\"benchmark\"\\s*:\\s*\"([^\"]*)\"");
 
     public static void main(String[] args) throws IOException, SQLException {
         AccountService db = new AccountService();
@@ -120,6 +121,8 @@ public class Main {
         server.createContext("/api/events/remove", exchange -> handleEventsRemove(exchange, db, eventService));
         server.createContext("/api/sync/canvas", exchange -> handleSyncCanvas(exchange, db, syncService));
         server.createContext("/api/sync/schoology", exchange -> handleSyncSchoology(exchange, db, syncService));
+        server.createContext("/api/settings/benchmark/get", exchange -> handleBenchmarkGet(exchange, db));
+        server.createContext("/api/settings/benchmark/save", exchange -> handleBenchmarkSave(exchange, db));
         server.createContext("/", Main::handleStaticFile);
 
         server.setExecutor(null);
@@ -801,6 +804,42 @@ public class Main {
         }
     }
 
+    
+    private static void handleBenchmarkGet(HttpExchange exchange, AccountService db) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            Double benchmark = db.getGradeBenchmark(userId);
+            String json = benchmark == null ? "{\"benchmark\":null}" : "{\"benchmark\":" + benchmark + "}";
+            sendJson(exchange, 200, json);
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleBenchmarkSave(HttpExchange exchange, AccountService db) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String benchmarkStr = getJsonValue(body, BENCHMARK_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            Double benchmark = (benchmarkStr == null || benchmarkStr.isBlank()) ? null : Double.parseDouble(benchmarkStr);
+            db.saveGradeBenchmark(userId, benchmark);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException | NumberFormatException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
     private static void handleStaticFile(HttpExchange exchange) throws IOException {
         if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendText(exchange, 405, "Method not allowed", "text/plain");
@@ -859,5 +898,6 @@ public class Main {
         return "application/octet-stream";
     }
 }
+
 
 
