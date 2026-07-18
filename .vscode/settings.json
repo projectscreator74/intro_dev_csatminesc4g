@@ -6,6 +6,11 @@
     "python.testing.pytestEnabled": true,
     "java.project.referencedLibraries": [
         "lib/**/*.jar",
+<<<<<<< HEAD
+        "Backend/**/*.jar",
+        "/Users/amarukollar/intro_dev_csatminesc4g/**/*.jar"
+=======
         "Backend/lib/postgresql-42.7.13.jar"
+>>>>>>> d0dd0716caabf245d94839615aabc2128c16e5f6
     ]
 }
