@@ -1,8 +1,14 @@
 const classSelect = document.getElementById('class-select');
 const list = document.getElementById('all-assignments-list');
 
+function getGradeBenchmark() {
+  const stored = localStorage.getItem('studystack-grade-benchmark');
+  return stored ? Number(stored) : null;
+}
+
 async function renderAssignments() {
   const classes = await loadClasses();
+  const benchmark = getGradeBenchmark();
 
   classSelect.innerHTML = classes.length
     ? classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('')
@@ -28,6 +34,7 @@ async function renderAssignments() {
     const row = document.createElement('li');
     row.className = 'assignment-row';
     const isGraded = a.grade !== null && a.grade !== undefined;
+    const isLow = isGraded && benchmark !== null && a.grade < benchmark;
 
     row.innerHTML = `
       <div class="assignment-left">
@@ -37,7 +44,7 @@ async function renderAssignments() {
           <span class="due-date">${a.className} · Due ${a.due}</span>
         </div>
       </div>
-      <span class="grade-tag ${isGraded ? 'graded' : 'ungraded'}" data-class="${a.classId}" data-id="${a.id}">${gradeLabel(a.grade)}</span>
+      <span class="grade-tag ${isGraded ? 'graded' : 'ungraded'} ${isLow ? 'low' : ''}" data-class="${a.classId}" data-id="${a.id}">${gradeLabel(a.grade)}</span>
       <button class="remove-btn" data-class="${a.classId}" data-id="${a.id}" title="Remove assignment">&times;</button>
     `;
 
