@@ -22,7 +22,7 @@
   </header>
 
   <nav id="side-menu" class="side-menu">
-    <div class="side-menu-logo" style="margin-top: -20px; margin-bottom: 28px;"><span class="logo-badge">S</span></div>
+    <div class="side-menu-logo" style="margin-top: -20px; margin-bottom: 8px;"><span class="logo-badge">S</span></div>
     <ul>
       <li><a href="index.html" class="active">Dashboard</a></li>
       <li><a href="classes.html">Classes</a></li>
@@ -44,15 +44,38 @@
       <div class="calendar-top">
         <h2 id="month-title">June 2026</h2>
         <div class="calendar-controls">
+          <button id="today-btn" class="btn-icon" aria-label="Jump to today">Today</button>
           <button id="prev-btn" class="btn-icon" aria-label="Previous month">&#8249;</button>
           <button id="next-btn" class="btn-icon" aria-label="Next month">&#8250;</button>
         </div>
       </div>
       <div class="calendar-days" id="calendar-days"></div>
     </section>
+
+    <section class="assignments-card">
+      <h2>Next 5 Things Due</h2>
+      <ul class="assignments" id="upcoming-list"></ul>
+    </section>
   </main>
 
+  <div id="day-backdrop" class="day-backdrop"></div>
+  <aside id="day-panel" class="day-panel">
+    <div class="day-panel-header">
+      <h2 id="day-panel-date">Select a date</h2>
+      <button class="btn-icon" id="day-panel-close" aria-label="Close">&times;</button>
+    </div>
+
+    <div class="benchmark-row">
+      <label for="grade-benchmark">Flag grades below</label>
+      <input type="number" id="grade-benchmark" min="0" max="100" placeholder="e.g. 70">
+      <span id="benchmark-saved-msg" class="save-msg"></span>
+    </div>
+
+    <ul class="assignments" id="day-panel-list"></ul>
+  </aside>
+
   <script src="utils.js"></script>
+  <script src="store.js"></script>
   <script src="sidebar.js"></script>
   <script src="script.js"></script>
   <script src="auth.js"></script>

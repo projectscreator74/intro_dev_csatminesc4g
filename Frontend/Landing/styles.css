@@ -1001,44 +1001,37 @@ select:focus {
 .goals-files-grid {
   max-width: 900px;
 }
-
 .goals-files-grid {
   display: flex;
   gap: 16px;
   margin-top: 20px;
   flex-wrap: wrap;
 }
-
 .goals-files-grid .assignments-card {
   flex: 1;
   min-width: 280px;
   margin-top: 0;
 }
-
 .item-card {
   background-color: whitesmoke;
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 12px;
 }
-
 .item-card h3 {
   font-size: 15px;
   margin-bottom: 4px;
 }
-
 .item-card p {
   font-size: 13px;
   color: rgb(86, 100, 114);
   margin-bottom: 2px;
 }
-
 .item-card-actions {
   margin-top: 10px;
   display: flex;
   gap: 8px;
 }
-
 .form-row select,
 .form-row textarea {
   width: 100%;
@@ -1049,8 +1042,88 @@ select:focus {
   color: rgb(46, 74, 159);
   font-family: inherit;
 }
-
 .form-row textarea {
   resize: vertical;
   min-height: 60px;
 }
+.day-panel {
+  position: fixed;
+  top: 0;
+  right: -360px;
+  width: 340px;
+  height: 100%;
+  background-color: white;
+  border-left: 1px solid whitesmoke;
+  padding: 24px 20px;
+  transition: right 0.25s ease;
+  z-index: 25;
+  overflow-y: auto;
+}
+
+.day-panel.open {
+  right: 0;
+}
+
+.day-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 22;
+}
+
+.day-backdrop.visible {
+  display: block;
+}
+
+.day-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.day-panel-header h2 {
+  font-size: 17px;
+  color: rgb(46, 74, 159);
+}
+
+.day-panel .day-name,
+.day-panel .day {
+  cursor: default;
+}
+
+.benchmark-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid whitesmoke;
+  flex-wrap: wrap;
+}
+
+.benchmark-row label {
+  font-size: 13px;
+  color: rgb(46, 74, 159);
+}
+
+.benchmark-row input {
+  width: 70px;
+  padding: 6px 8px;
+  border: 1px solid whitesmoke;
+  border-radius: 8px;
+  font-size: 13px;
+  color: rgb(46, 74, 159);
+  font-family: inherit;
+}
+
+.grade-tag.low,
+.grade-badge.low {
+  background-color: rgb(255, 221, 221);
+  color: rgb(198, 42, 42)
+}
+

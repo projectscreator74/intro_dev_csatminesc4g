@@ -1,11 +1,18 @@
 const grid = document.getElementById('classes-grid');
 
+function getGradeBenchmark() {
+  const stored = localStorage.getItem('studystack-grade-benchmark');
+  return stored ? Number(stored) : null;
+}
+
 async function renderClasses() {
   const classes = await loadClasses();
+  const benchmark = getGradeBenchmark();
   grid.innerHTML = "";
 
   classes.forEach(cls => {
     const avg = getClassAverage(cls.assignments);
+    const isLow = avg !== null && benchmark !== null && avg < benchmark;
 
     const title = document.createElement('a');
     title.href = `class-detail.html?id=${cls.id}`;
@@ -15,7 +22,7 @@ async function renderClasses() {
       <div class="class-title-top">
         <h3>${cls.name}</h3>
         <div class="class-title-actions">
-          <span class="grade-badge">${gradeLabel(avg)}</span>
+          <span class="grade-badge ${isLow ? 'low' : ''}">${gradeLabel(avg)}</span>
           <button class="remove-btn" data-id="${cls.id}" title="Remove Class">&times;</button>
         </div>
       </div>

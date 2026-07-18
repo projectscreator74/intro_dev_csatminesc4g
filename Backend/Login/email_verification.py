@@ -70,4 +70,4 @@ def check_code(email, submitted_code):
 
     return "success"
 
-app.run(port=5050)
+app.run(host="127.0.0.1", port=5001)
