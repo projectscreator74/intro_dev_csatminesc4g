@@ -55,28 +55,34 @@ public class ClassService {
     return -1;
   }
 
-  public void syncAssignment(int userId, int classId, String extId, String title, double totalPoints)
-      throws SQLException {
-    String checkSql = "SELECT assignment_id FROM assignment WHERE ext_id = ? AND user_id = ?";
-    try (PreparedStatement check = conn.prepareStatement(checkSql)) {
-      check.setString(1, extId);
-      check.setInt(2, userId);
-      ResultSet rs = check.executeQuery();
-      if (rs.next()) {
-        return;
-      }
-    }
+    public void syncAssignment(int userId, int classId, String extId, String title, double totalPoints, String dueTimestamp) throws SQLException {
+        String checkSql = "SELECT assignment_id FROM assignment WHERE ext_id = ? AND user_id = ?";
+        try (PreparedStatement check = conn.prepareStatement(checkSql)) {
+            check.setString(1, extId);
+            check.setInt(2, userId);
+            ResultSet rs = check.executeQuery();
+            if (rs.next()) {
+                return;
+            }
+        }
 
-    String insertSql = "INSERT INTO assignment (user_id, class_id, title, total_points, ext_id) VALUES (?, ?, ?, ?, ?)";
-    try (PreparedStatement insert = conn.prepareStatement(insertSql)) {
-      insert.setInt(1, userId);
-      insert.setInt(2, classId);
-      insert.setString(3, title);
-      insert.setDouble(4, totalPoints);
-      insert.setString(5, extId);
-      insert.executeUpdate();
+        String insertSql = "INSERT INTO assignment (user_id, class_id, title, total_points, ext_id, timedate) VALUES (?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement insert = conn.prepareStatement(insertSql)) {
+            insert.setInt(1, userId);
+            insert.setInt(2, classId);
+            insert.setString(3, title);
+            insert.setDouble(4, totalPoints);
+            insert.setString(5, extId);
+
+            if (dueTimestamp == null || dueTimestamp.isBlank()) {
+                insert.setNull(6, java.sql.Types.TIMESTAMP);
+            } else {
+                insert.setTimestamp(6, Timestamp.valueOf(dueTimestamp));
+            }
+
+            insert.executeUpdate();
+        }
     }
-  }
 
   // ===== Frontend-facing CRUD methods =====
 

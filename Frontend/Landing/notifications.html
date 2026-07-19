@@ -4,7 +4,6 @@
   <title>StudyStack Notifications</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
     <header class="navbar">
     <button id="menu-toggle" class="btn-icon" aria-label="Open menu">
@@ -17,7 +16,6 @@
       </a>
     </div>
   </header>
-
   <nav id="side-menu" class="side-menu">
     <div class="side-menu-logo" style="margin-top: -20px; margin-bottom: 28px;"><span class="logo-badge">S</span></div>
     <ul>
@@ -30,104 +28,68 @@
       <li><a href="settings.html">Settings</a></li>
     </ul>
   </nav>
-
   <div id="backdrop" class="backdrop"></div>
-
   <main class="page-content">
     <div class="notification-top">
       <h1>Notifications</h1>
-
       <button class="bell-button" onclick="toggleNotifications()">
-        🔔
+        &#128276;
       </button>
   </div>
-
   <div id="notificationBox" class="notification-box">
     <h2>Your Notifications</h2>
-
     <button onclick="clearAll()">Clear All</button>
-
     <div id="notificationList"></div>
   </div>
-
   <h2>Message Boxes</h2>
-
   <div class="message-box success">
     Success: Your information was saved.
   </div>
-
   <div class="message-box warning">
     Warning: A goal deadline is coming soon.
   </div>
-
   <div class="message-box error">
     Error: You have an overdue assignment.
   </div>
-
   <div class="message-box info">
     Info: A new assignment was added.
   </div>
   </main>
   <script src="sidebar.js"></script>
+  <script src="auth.js"></script>
   <script>
-    var notifications = [
-      {
-        title: "Assignment due soon",
-        message: "Your math homework is due tomorrow.",
-        type: "orange",
-        time: "Today",
-        read: false
-      },
-      {
-        title: "Overdue assignment",
-        message: "Your history essay is overdue.",
-        type: "red",
-        time: "Yesterday",
-        read: false
-      },
-      {
-        title: "New assignment",
-        message: "A new science project was posted.",
-        type: "blue",
-        time: "2 hours ago",
-        read: true
-      },
-      {
-        title: "Uploaded document",
-        message: "Your resume was uploaded.",
-        type: "green",
-        time: "Monday",
-        read: false
-      }
-    ];
+    const USER_EMAIL = localStorage.getItem('studystackUserEmail');
 
-    function showNotifications() {
+    async function loadNotifications() {
+      const response = await fetch('/api/notifications/list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: USER_EMAIL }),
+      });
+      return await response.json();
+    }
+
+    async function showNotifications() {
+      const notifications = await loadNotifications();
       var list = document.getElementById("notificationList");
       list.innerHTML = "";
 
-      for (var i = 0; i < notifications.length; i++) {
-        var readClass = "";
-
-        if (notifications[i].read == false) {
-          readClass = "unread";
-        }
-
+      notifications.forEach(n => {
+        var readClass = n.read ? "" : "unread";
         list.innerHTML += `
-          <div class="notification ${notifications[i].type} ${readClass}">
-            <h3>${notifications[i].title}</h3>
-            <p>${notifications[i].message}</p>
-            <p>${notifications[i].time}</p>
-
-            <button onclick="markRead(${i})">Mark Read</button>
-            <button onclick="dismissNotification(${i})">Dismiss</button>
+          <div class="notification ${n.type} ${readClass}">
+            <h3>${n.title}</h3>
+            <p>${n.message}</p>
+            <p>${n.time}</p>
+            <button onclick="markRead(${n.id})">Mark Read</button>
+            <button onclick="dismissNotification(${n.id})">Dismiss</button>
           </div>
         `;
-      }
+      });
     }
 
     function toggleNotifications() {
       var box = document.getElementById("notificationBox");
-
       if (box.style.display == "none" || box.style.display == "") {
         box.style.display = "block";
       } else {
@@ -135,18 +97,30 @@
       }
     }
 
-    function markRead(index) {
-      notifications[index].read = true;
+    async function markRead(id) {
+      await fetch('/api/notifications/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: USER_EMAIL, notificationId: id }),
+      });
       showNotifications();
     }
 
-    function dismissNotification(index) {
-      notifications.splice(index, 1);
+    async function dismissNotification(id) {
+      await fetch('/api/notifications/dismiss', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: USER_EMAIL, notificationId: id }),
+      });
       showNotifications();
     }
 
-    function clearAll() {
-      notifications = [];
+    async function clearAll() {
+      await fetch('/api/notifications/clear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: USER_EMAIL }),
+      });
       showNotifications();
     }
 
@@ -154,4 +128,3 @@
   </script>
 </body>
 </html>
-

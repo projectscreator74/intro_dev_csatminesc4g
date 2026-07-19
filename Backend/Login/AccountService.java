@@ -96,6 +96,35 @@ public class AccountService {
         }
     }
 
+    public Double getGradeBenchmark(int userId) throws SQLException {
+        String sql = "SELECT grade_benchmark FROM profile WHERE user_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                double value = rs.getDouble("grade_benchmark");
+                if (rs.wasNull()) {
+                    return null;
+                }
+                return value;
+            }
+        }
+        return null;
+    }
+
+    public void saveGradeBenchmark(int userId, Double benchmark) throws SQLException {
+        String sql = "UPDATE profile SET grade_benchmark = ? WHERE user_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            if (benchmark == null) {
+                stmt.setNull(1, java.sql.Types.NUMERIC);
+            } else {
+                stmt.setDouble(1, benchmark);
+            }
+            stmt.setInt(2, userId);
+            stmt.executeUpdate();
+        }
+    }
+
     public void deleteAccount(int userId) throws SQLException {
         String[] deleteStatements = {
                 "DELETE FROM assignment WHERE user_id = ?",

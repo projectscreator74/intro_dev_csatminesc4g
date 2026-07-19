@@ -31,11 +31,28 @@ public class Main {
     private static final Pattern PROVIDER_PATTERN = Pattern.compile("\"provider\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern FIELD1_PATTERN = Pattern.compile("\"field1\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern FIELD2_PATTERN = Pattern.compile("\"field2\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern GOAL_ID_PATTERN = Pattern.compile("\"goalId\"\\s*:\\s*(\\d+)");
+    private static final Pattern STATUS_PATTERN = Pattern.compile("\"status\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern NOTES_PATTERN = Pattern.compile("\"notes\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern FILE_ID_PATTERN = Pattern.compile("\"fileId\"\\s*:\\s*(\\d+)");
+    private static final Pattern TYPE_PATTERN = Pattern.compile("\"type\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern CATEGORY_PATTERN = Pattern.compile("\"category\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern NOTIFICATION_ID_PATTERN = Pattern.compile("\"notificationId\"\\s*:\\s*(\\d+)");
+    private static final Pattern EVENT_ID_PATTERN = Pattern.compile("\"eventId\"\\s*:\\s*(\\d+)");
+    private static final Pattern LOCATION_PATTERN = Pattern.compile("\"location\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern START_TIME_PATTERN = Pattern.compile("\"startTime\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern END_TIME_PATTERN = Pattern.compile("\"endTime\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern SCHOOLOGY_COURSE_ID_PATTERN = Pattern.compile("\"schoologyCourseId\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern FIELD3_PATTERN = Pattern.compile("\"field3\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern BENCHMARK_PATTERN = Pattern.compile("\"benchmark\"\\s*:\\s*\"([^\"]*)\"");
 
     public static void main(String[] args) throws IOException, SQLException {
         AccountService db = new AccountService();
         ClassService classService = new ClassService();
         IntegrationService integrationService = new IntegrationService();
+        GoalService goalService = new GoalService();
+        EventService eventService = new EventService();
+        SyncService syncService = new SyncService(classService, integrationService);
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
 
         String[] candidates = {"python", "py", "python3"};
@@ -85,10 +102,55 @@ public class Main {
         server.createContext("/api/integrations/status",
                 exchange -> handleIntegrationsStatus(exchange, db, integrationService));
         server.createContext("/api/account/delete", exchange -> handleAccountDelete(exchange, db));
+        server.createContext("/api/goals/list", exchange -> handleGoalsList(exchange, db, goalService));
+        server.createContext("/api/goals/add", exchange -> handleGoalsAdd(exchange, db, goalService));
+        server.createContext("/api/goals/update", exchange -> handleGoalsUpdate(exchange, db, goalService));
+        server.createContext("/api/goals/complete", exchange -> handleGoalsComplete(exchange, db, goalService));
+        server.createContext("/api/goals/remove", exchange -> handleGoalsRemove(exchange, db, goalService));
+        server.createContext("/api/files/list", exchange -> handleFilesList(exchange, db, goalService));
+        server.createContext("/api/files/add", exchange -> handleFilesAdd(exchange, db, goalService));
+        server.createContext("/api/files/rename", exchange -> handleFilesRename(exchange, db, goalService));
+        server.createContext("/api/files/remove", exchange -> handleFilesRemove(exchange, db, goalService));
+        server.createContext("/api/notifications/list", exchange -> handleNotificationsList(exchange, db, goalService));
+        server.createContext("/api/notifications/read", exchange -> handleNotificationsRead(exchange, db, goalService));
+        server.createContext("/api/notifications/dismiss", exchange -> handleNotificationsDismiss(exchange, db, goalService));
+        server.createContext("/api/notifications/clear", exchange -> handleNotificationsClear(exchange, db, goalService));
+        server.createContext("/api/events/list", exchange -> handleEventsList(exchange, db, eventService));
+        server.createContext("/api/events/add", exchange -> handleEventsAdd(exchange, db, eventService));
+        server.createContext("/api/events/update", exchange -> handleEventsUpdate(exchange, db, eventService));
+        server.createContext("/api/events/remove", exchange -> handleEventsRemove(exchange, db, eventService));
+        server.createContext("/api/sync/canvas", exchange -> handleSyncCanvas(exchange, db, syncService));
+        server.createContext("/api/sync/schoology", exchange -> handleSyncSchoology(exchange, db, syncService));
+        server.createContext("/api/settings/benchmark/get", exchange -> handleBenchmarkGet(exchange, db));
+        server.createContext("/api/settings/benchmark/save", exchange -> handleBenchmarkSave(exchange, db));
         server.createContext("/", Main::handleStaticFile);
 
         server.setExecutor(null);
         server.start();
+
+        java.util.concurrent.ScheduledExecutorService scheduler = java.util.concurrent.Executors.newSingleThreadScheduledExecutor();
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                for (int uid : integrationService.getAllConnectedUserIds("canvas")) {
+                    try {
+                        syncService.syncCanvas(uid);
+                        System.out.println("Auto-synced Canvas for user " + uid);
+                    } catch (Exception e) {
+                        System.out.println("Canvas auto-sync failed for user " + uid + ": " + e.getMessage());
+                    }
+                }
+                for (int uid : integrationService.getAllConnectedUserIds("schoology")) {
+                    try {
+                        syncService.syncSchoology(uid, null);
+                        System.out.println("Auto-synced Schoology for user " + uid);
+                    } catch (Exception e) {
+                        System.out.println("Schoology auto-sync failed for user " + uid + ": " + e.getMessage());
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, 30, 30, java.util.concurrent.TimeUnit.SECONDS);
 
         System.out.println("StudyStack is running at http://localhost:" + PORT + "/login.html");
     }
@@ -197,9 +259,10 @@ public class Main {
         String provider = getJsonValue(body, PROVIDER_PATTERN);
         String field1 = getJsonValue(body, FIELD1_PATTERN);
         String field2 = getJsonValue(body, FIELD2_PATTERN);
+        String field3 = getJsonValue(body, FIELD3_PATTERN);
         try {
             int userId = db.getUserIdByEmail(email);
-            integrationService.saveIntegration(userId, provider, field1, field2);
+            integrationService.saveIntegration(userId, provider, field1, field2, field3);
             sendJson(exchange, 200, "{\"success\":true}");
         } catch (SQLException e) {
             sendJson(exchange, 500, "{\"success\":false,\"message\":\"Failed to save integration.\"}");
@@ -388,6 +451,395 @@ public class Main {
         }
     }
 
+    private static void handleGoalsList(HttpExchange exchange, AccountService db, GoalService goalService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            sendJson(exchange, 200, goalService.getGoals(userId).toString());
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleGoalsAdd(HttpExchange exchange, AccountService db, GoalService goalService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String title = getJsonValue(body, TITLE_PATTERN);
+        String due = getJsonValue(body, DUE_PATTERN);
+        String notes = getJsonValue(body, NOTES_PATTERN);
+        String status = getJsonValue(body, STATUS_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            int goalId = goalService.addGoal(userId, title, due, notes, status);
+            sendJson(exchange, 200, "{\"success\":true,\"goalId\":" + goalId + "}");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleGoalsUpdate(HttpExchange exchange, AccountService db, GoalService goalService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String goalIdStr = getJsonValue(body, GOAL_ID_PATTERN);
+        String title = getJsonValue(body, TITLE_PATTERN);
+        String due = getJsonValue(body, DUE_PATTERN);
+        String notes = getJsonValue(body, NOTES_PATTERN);
+        String status = getJsonValue(body, STATUS_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            int goalId = Integer.parseInt(goalIdStr);
+            goalService.updateGoal(goalId, userId, title, due, notes, status);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException | NumberFormatException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleGoalsComplete(HttpExchange exchange, AccountService db, GoalService goalService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String goalIdStr = getJsonValue(body, GOAL_ID_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            int goalId = Integer.parseInt(goalIdStr);
+            goalService.completeGoal(goalId, userId);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException | NumberFormatException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleGoalsRemove(HttpExchange exchange, AccountService db, GoalService goalService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String goalIdStr = getJsonValue(body, GOAL_ID_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            int goalId = Integer.parseInt(goalIdStr);
+            goalService.deleteGoal(goalId, userId);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException | NumberFormatException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleFilesList(HttpExchange exchange, AccountService db, GoalService goalService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            sendJson(exchange, 200, goalService.getFiles(userId).toString());
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleFilesAdd(HttpExchange exchange, AccountService db, GoalService goalService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String name = getJsonValue(body, NAME_PATTERN);
+        String type = getJsonValue(body, TYPE_PATTERN);
+        String category = getJsonValue(body, CATEGORY_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            int fileId = goalService.addFile(userId, name, type, category);
+            sendJson(exchange, 200, "{\"success\":true,\"fileId\":" + fileId + "}");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleFilesRename(HttpExchange exchange, AccountService db, GoalService goalService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String fileIdStr = getJsonValue(body, FILE_ID_PATTERN);
+        String name = getJsonValue(body, NAME_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            int fileId = Integer.parseInt(fileIdStr);
+            goalService.renameFile(fileId, userId, name);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException | NumberFormatException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleFilesRemove(HttpExchange exchange, AccountService db, GoalService goalService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String fileIdStr = getJsonValue(body, FILE_ID_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            int fileId = Integer.parseInt(fileIdStr);
+            goalService.deleteFile(fileId, userId);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException | NumberFormatException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleNotificationsList(HttpExchange exchange, AccountService db, GoalService goalService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            sendJson(exchange, 200, goalService.getNotifications(userId).toString());
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleNotificationsRead(HttpExchange exchange, AccountService db, GoalService goalService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String notificationIdStr = getJsonValue(body, NOTIFICATION_ID_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            int notificationId = Integer.parseInt(notificationIdStr);
+            goalService.markNotificationRead(notificationId, userId);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException | NumberFormatException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleNotificationsDismiss(HttpExchange exchange, AccountService db, GoalService goalService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String notificationIdStr = getJsonValue(body, NOTIFICATION_ID_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            int notificationId = Integer.parseInt(notificationIdStr);
+            goalService.dismissNotification(notificationId, userId);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException | NumberFormatException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleNotificationsClear(HttpExchange exchange, AccountService db, GoalService goalService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            goalService.clearAllNotifications(userId);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleEventsList(HttpExchange exchange, AccountService db, EventService eventService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            sendJson(exchange, 200, eventService.getEvents(userId).toString());
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleEventsAdd(HttpExchange exchange, AccountService db, EventService eventService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String title = getJsonValue(body, TITLE_PATTERN);
+        String notes = getJsonValue(body, NOTES_PATTERN);
+        String location = getJsonValue(body, LOCATION_PATTERN);
+        String startTime = getJsonValue(body, START_TIME_PATTERN);
+        String endTime = getJsonValue(body, END_TIME_PATTERN);
+        String classIdStr = getJsonValue(body, CLASS_ID_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            Integer classId = classIdStr.isBlank() ? null : Integer.parseInt(classIdStr);
+            int eventId = eventService.addEvent(userId, title, notes, location, startTime, endTime, classId);
+            sendJson(exchange, 200, "{\"success\":true,\"eventId\":" + eventId + "}");
+        } catch (SQLException | NumberFormatException e) {
+            e.printStackTrace();
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleEventsUpdate(HttpExchange exchange, AccountService db, EventService eventService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String eventIdStr = getJsonValue(body, EVENT_ID_PATTERN);
+        String title = getJsonValue(body, TITLE_PATTERN);
+        String notes = getJsonValue(body, NOTES_PATTERN);
+        String location = getJsonValue(body, LOCATION_PATTERN);
+        String startTime = getJsonValue(body, START_TIME_PATTERN);
+        String endTime = getJsonValue(body, END_TIME_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            int eventId = Integer.parseInt(eventIdStr);
+            eventService.updateEvent(eventId, userId, title, notes, location, startTime, endTime);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException | NumberFormatException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleEventsRemove(HttpExchange exchange, AccountService db, EventService eventService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String eventIdStr = getJsonValue(body, EVENT_ID_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            int eventId = Integer.parseInt(eventIdStr);
+            eventService.deleteEvent(eventId, userId);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException | NumberFormatException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    
+    private static void handleSyncCanvas(HttpExchange exchange, AccountService db, SyncService syncService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            syncService.syncCanvas(userId);
+            sendJson(exchange, 200, "{\"success\":true,\"message\":\"Canvas sync completed.\"}");
+        } catch (IllegalStateException e) {
+            sendJson(exchange, 400, "{\"success\":false,\"message\":\"" + e.getMessage() + "\"}");
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendJson(exchange, 500, "{\"success\":false,\"message\":\"Canvas sync failed.\"}");
+        }
+    }
+
+    private static void handleSyncSchoology(HttpExchange exchange, AccountService db, SyncService syncService) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String schoologyCourseId = getJsonValue(body, SCHOOLOGY_COURSE_ID_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            syncService.syncSchoology(userId, schoologyCourseId);
+            sendJson(exchange, 200, "{\"success\":true,\"message\":\"Schoology sync completed.\"}");
+        } catch (IllegalStateException e) {
+            sendJson(exchange, 400, "{\"success\":false,\"message\":\"" + e.getMessage() + "\"}");
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendJson(exchange, 500, "{\"success\":false,\"message\":\"Schoology sync failed.\"}");
+        }
+    }
+
+    
+    private static void handleBenchmarkGet(HttpExchange exchange, AccountService db) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            Double benchmark = db.getGradeBenchmark(userId);
+            String json = benchmark == null ? "{\"benchmark\":null}" : "{\"benchmark\":" + benchmark + "}";
+            sendJson(exchange, 200, json);
+        } catch (SQLException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
+    private static void handleBenchmarkSave(HttpExchange exchange, AccountService db) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        String email = getJsonValue(body, EMAIL_PATTERN);
+        String benchmarkStr = getJsonValue(body, BENCHMARK_PATTERN);
+        try {
+            int userId = db.getUserIdByEmail(email);
+            Double benchmark = (benchmarkStr == null || benchmarkStr.isBlank()) ? null : Double.parseDouble(benchmarkStr);
+            db.saveGradeBenchmark(userId, benchmark);
+            sendJson(exchange, 200, "{\"success\":true}");
+        } catch (SQLException | NumberFormatException e) {
+            sendJson(exchange, 500, "{\"success\":false}");
+        }
+    }
+
     private static void handleStaticFile(HttpExchange exchange) throws IOException {
         if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendText(exchange, 405, "Method not allowed", "text/plain");
@@ -404,7 +856,7 @@ public class Main {
         byte[] fileBytes = Files.readAllBytes(filePath);
         String ct = contentType(filePath);
         exchange.getResponseHeaders().set("Content-Type", ct);
-        if (ct.startsWith("text/html")) {
+        if (ct.startsWith("text/html") || ct.startsWith("application/javascript") || ct.startsWith("text/css")) {
             exchange.getResponseHeaders().set("Cache-Control", "no-store");
         }
         exchange.sendResponseHeaders(200, fileBytes.length);
@@ -446,3 +898,6 @@ public class Main {
         return "application/octet-stream";
     }
 }
+
+
+

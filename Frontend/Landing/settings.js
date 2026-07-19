@@ -31,11 +31,11 @@ async function loadIntegrationStatus() {
   }
 }
 
-async function saveIntegration(provider, field1, field2) {
+async function saveIntegration(provider, field1, field2, field3) {
   await fetch('/api/integrations/save', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: USER_EMAIL, provider, field1, field2 }),
+    body: JSON.stringify({ email: USER_EMAIL, provider, field1, field2, field3: field3 || '' }),
   });
   integrationsMsg.textContent = "Saved!";
   setTimeout(() => { integrationsMsg.textContent = ""; }, 2000);
@@ -69,18 +69,19 @@ document.getElementById('canvas-connect-btn').addEventListener('click', async ()
     alert('Please fill in both Canvas fields.');
     return;
   }
-  await saveIntegration('canvas', domain, token);
+  await saveIntegration('canvas', domain, token, '');
   document.getElementById('canvas-connect-btn').textContent = 'Connected \u2713';
 });
 
 document.getElementById('schoology-connect-btn').addEventListener('click', async () => {
   const key = document.getElementById('schoology-key').value.trim();
   const secret = document.getElementById('schoology-secret').value.trim();
+  const courseId = document.getElementById('schoology-course-id').value.trim();
   if (!key || !secret) {
     alert('Please fill in both Schoology fields.');
     return;
   }
-  await saveIntegration('schoology', key, secret);
+  await saveIntegration('schoology', key, secret, courseId);
   document.getElementById('schoology-connect-btn').textContent = 'Connected \u2713';
 });
 
@@ -88,7 +89,32 @@ document.getElementById('google-connect-btn').addEventListener('click', () => {
   alert('This feature is currently unavailable. Sorry!');
 });
 
+document.getElementById('canvas-sync-now-btn').addEventListener('click', async () => {
+  const msg = document.getElementById('canvas-sync-msg');
+  msg.textContent = 'Syncing...';
+  const response = await fetch('/api/sync/canvas', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: USER_EMAIL }),
+  });
+  const result = await response.json();
+  msg.textContent = result.message || (result.success ? 'Synced!' : 'Sync failed.');
+});
+
+document.getElementById('schoology-sync-now-btn').addEventListener('click', async () => {
+  const msg = document.getElementById('schoology-sync-msg');
+  msg.textContent = 'Syncing...';
+  const response = await fetch('/api/sync/schoology', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: USER_EMAIL }),
+  });
+  const result = await response.json();
+  msg.textContent = result.message || (result.success ? 'Synced!' : 'Sync failed.');
+});
+
 init();
+
 document.getElementById('delete-account-btn').addEventListener('click', async () => {
   const confirmed = confirm('This will permanently delete your account and ALL your data. This cannot be undone. Are you sure?');
   if (!confirmed) return;

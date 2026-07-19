@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>StudyStack Goals and Files</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyStack — Goals and Files</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
+
   <header class="navbar">
     <button id="menu-toggle" class="btn-icon" aria-label="Open menu">
       <span class="nav-arrow">&#9654;</span>
@@ -19,6 +21,7 @@
   </header>
 
   <nav id="side-menu" class="side-menu">
+    <div class="side-menu-logo" style="margin-top: -20px; margin-bottom: 28px;"><span class="logo-badge">S</span></div>
     <ul>
       <li><a href="index.html">Dashboard</a></li>
       <li><a href="classes.html">Classes</a></li>
@@ -32,244 +35,79 @@
 
   <div id="backdrop" class="backdrop"></div>
 
-  <main class="page-content">
-      <h1>Goals and Files</h1>
+  <main class="page-content" style="max-width: 960px;">
+    <h1>Goals and Files</h1>
+    <p class="subtitle">Track your goals and keep important documents handy.</p>
 
-      <div class="big-box">
-        <div class="panel">
-          <div class="top-row">
-            <h2>Your Goals</h2>
-            <button class="gray-button" onclick="showGoalForm()">Add Goal</button>
-          </div>
+    <div class="goals-files-grid">
 
-          <div class="form-box" id="goalForm">
-            <h3>Add / Edit Goal</h3>
-
-            <label>Goal Title</label>
-            <input id="goalTitle">
-
-            <label>Due Date</label>
-            <input id="goalDate" type="date">
-
-            <label>Notes</label>
-            <textarea id="goalNotes"></textarea>
-
-            <label>Status</label>
-            <select id="goalStatus">
-              <option>Not Started</option>
-              <option>In Progress</option>
-              <option>Completed</option>
-            </select>
-
-            <button onclick="saveGoal()">Save</button>
-            <button onclick="hideGoalForm()">Cancel</button>
-          </div>
-
-          <div id="goalList"></div>
+      <section class="assignments-card">
+        <div class="detail-top">
+          <h2>Your Goals</h2>
         </div>
 
-        <div class="panel">
-          <div class="top-row">
-            <h2>Your Documents</h2>
-            <button class="gray-button" onclick="showDocumentForm()">Upload</button>
-          </div>
+        <div class="form-row" id="goalForm" style="display: none; background: whitesmoke; padding: 16px; border-radius: 12px;">
+          <label>Goal Title</label>
+          <input id="goalTitle" type="text">
 
-          <div class="form-box" id="documentForm">
-            <h3>Upload / Rename Document</h3>
+          <label>Due Date</label>
+          <input id="goalDate" type="date">
 
-            <label>File Name</label>
-            <input id="documentName">
+          <label>Notes</label>
+          <textarea id="goalNotes"></textarea>
 
-            <label>File Type</label>
-            <input id="documentType" placeholder="PDF, PNG, DOCX">
+          <label>Status</label>
+          <select id="goalStatus">
+            <option>Not Started</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+          </select>
 
-            <label>Category</label>
-            <select id="documentCategory">
-              <option>Resume</option>
-              <option>School project</option>
-              <option>Certificate</option>
-              <option>College essay</option>
-              <option>Job application</option>
-              <option>Volunteer document</option>
-            </select>
-
-            <button onclick="saveDocument()">Save</button>
-            <button onclick="hideDocumentForm()">Cancel</button>
-          </div>
-
-          <div id="documentList"></div>
+          <button class="add-btn" onclick="saveGoal()">Save</button>
+          <button class="danger-btn" onclick="hideGoalForm()">Cancel</button>
         </div>
-      </div>
+
+        <div id="goalList"></div>
+
+        <button class="add-btn" onclick="showGoalForm()">+ Add Goal</button>
+      </section>
+
+      <section class="assignments-card">
+        <div class="detail-top">
+          <h2>Your Documents</h2>
+        </div>
+
+        <div class="form-row" id="documentForm" style="display: none; background: whitesmoke; padding: 16px; border-radius: 12px;">
+          <label>File Name</label>
+          <input id="documentName" type="text">
+
+          <label>File Type</label>
+          <input id="documentType" placeholder="PDF, PNG, DOCX">
+
+          <label>Category</label>
+          <select id="documentCategory">
+            <option>Resume</option>
+            <option>School project</option>
+            <option>Certificate</option>
+            <option>College essay</option>
+            <option>Job application</option>
+            <option>Volunteer document</option>
+          </select>
+
+          <button class="add-btn" onclick="saveDocument()">Save</button>
+          <button class="danger-btn" onclick="hideDocumentForm()">Cancel</button>
+        </div>
+
+        <div id="documentList"></div>
+
+        <button class="add-btn" onclick="showDocumentForm()">+ Upload</button>
+      </section>
+
     </div>
-  </div>
   </main>
+
   <script src="sidebar.js"></script>
-  <script>
-    var goals = [
-      {
-        title: "Learn Python",
-        date: "2026-05-30",
-        notes: "Practice coding",
-        status: "In Progress"
-      },
-      {
-        title: "Finish a college resume",
-        date: "2026-06-10",
-        notes: "Add clubs and awards",
-        status: "Not Started"
-      }
-    ];
-
-    var documents = [
-      {
-        name: "Resume",
-        type: "PDF",
-        category: "Resume",
-        date: "2026-05-01"
-      },
-      {
-        name: "Volunteer Certificate",
-        type: "JPG",
-        category: "Certificate",
-        date: "2026-05-09"
-      }
-    ];
-
-    var editingGoal = -1;
-    var editingDocument = -1;
-
-    function showGoals() {
-      var list = document.getElementById("goalList");
-      list.innerHTML = "";
-
-      for (var i = 0; i < goals.length; i++) {
-        list.innerHTML += `
-          <div class="item">
-            <h3>${goals[i].title}</h3>
-            <p>Due Date: ${goals[i].date}</p>
-            <p>Notes: ${goals[i].notes}</p>
-            <p>Status: ${goals[i].status}</p>
-
-            <button class="edit" onclick="editGoal(${i})">Edit</button>
-            <button class="complete" onclick="completeGoal(${i})">Complete</button>
-            <button class="delete" onclick="deleteGoal(${i})">Delete</button>
-          </div>
-        `;
-      }
-    }
-
-    function showDocuments() {
-      var list = document.getElementById("documentList");
-      list.innerHTML = "";
-
-      for (var i = 0; i < documents.length; i++) {
-        list.innerHTML += `
-          <div class="item">
-            <h3>${documents[i].name}</h3>
-            <p>Type: ${documents[i].type}</p>
-            <p>Category: ${documents[i].category}</p>
-            <p>Uploaded: ${documents[i].date}</p>
-
-            <button class="edit" onclick="alert('Opening file...')">Open</button>
-            <button class="complete" onclick="editDocument(${i})">Rename</button>
-            <button class="delete" onclick="deleteDocument(${i})">Delete</button>
-          </div>
-        `;
-      }
-    }
-
-    function showGoalForm() {
-      editingGoal = -1;
-      document.getElementById("goalForm").style.display = "block";
-    }
-
-    function hideGoalForm() {
-      document.getElementById("goalForm").style.display = "none";
-    }
-
-    function saveGoal() {
-      var newGoal = {
-        title: document.getElementById("goalTitle").value,
-        date: document.getElementById("goalDate").value,
-        notes: document.getElementById("goalNotes").value,
-        status: document.getElementById("goalStatus").value
-      };
-
-      if (editingGoal == -1) {
-        goals.push(newGoal);
-      } else {
-        goals[editingGoal] = newGoal;
-      }
-
-      hideGoalForm();
-      showGoals();
-    }
-
-    function editGoal(index) {
-      editingGoal = index;
-
-      document.getElementById("goalTitle").value = goals[index].title;
-      document.getElementById("goalDate").value = goals[index].date;
-      document.getElementById("goalNotes").value = goals[index].notes;
-      document.getElementById("goalStatus").value = goals[index].status;
-
-      document.getElementById("goalForm").style.display = "block";
-    }
-
-    function completeGoal(index) {
-      goals[index].status = "Completed";
-      showGoals();
-    }
-
-    function deleteGoal(index) {
-      goals.splice(index, 1);
-      showGoals();
-    }
-
-    function showDocumentForm() {
-      editingDocument = -1;
-      document.getElementById("documentForm").style.display = "block";
-    }
-
-    function hideDocumentForm() {
-      document.getElementById("documentForm").style.display = "none";
-    }
-
-    function saveDocument() {
-      var newDocument = {
-        name: document.getElementById("documentName").value,
-        type: document.getElementById("documentType").value,
-        category: document.getElementById("documentCategory").value,
-        date: "2026-06-30"
-      };
-
-      if (editingDocument == -1) {
-        documents.push(newDocument);
-      } else {
-        documents[editingDocument] = newDocument;
-      }
-
-      hideDocumentForm();
-      showDocuments();
-    }
-
-    function editDocument(index) {
-      editingDocument = index;
-
-      document.getElementById("documentName").value = documents[index].name;
-      document.getElementById("documentType").value = documents[index].type;
-      document.getElementById("documentCategory").value = documents[index].category;
-
-      document.getElementById("documentForm").style.display = "block";
-    }
-
-    function deleteDocument(index) {
-      documents.splice(index, 1);
-      showDocuments();
-    }
-
-    showGoals();
-    showDocuments();
-  </script>
+  <script src="goalsandfiles.js"></script>
+  <script src="auth.js"></script>
 </body>
 </html>

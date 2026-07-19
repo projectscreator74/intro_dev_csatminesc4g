@@ -18,6 +18,20 @@ function getGradeBenchmark() {
   return stored ? Number(stored) : null;
 }
 
+async function loadEvents() {
+  const response = await fetch('/api/events/list', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: USER_EMAIL }),
+  });
+  return await response.json();
+}
+
+function parseEventDate(startTime) {
+  if (!startTime) return null;
+  return new Date(startTime.replace(' ', 'T'));
+}
+
 const monthTitle = document.getElementById('month-title');
 const daysContainer = document.getElementById('calendar-days');
 const prevBtn = document.getElementById('prev-btn');
@@ -34,7 +48,7 @@ let currentYear = today.getFullYear();
 let currentMonth = today.getMonth();
 let selectedCell = null;
 
-function buildCalendar(year, month) {
+async function buildCalendar(year, month) {
   monthTitle.textContent = `${monthNames[month]} ${year}`;
   daysContainer.innerHTML = "";
   selectedCell = null;
@@ -56,6 +70,25 @@ function buildCalendar(year, month) {
     daysContainer.appendChild(blank);
   }
 
+  const [classes, events] = await Promise.all([loadClasses(), loadEvents()]);
+
+  const dueDaysSet = new Set();
+  classes.forEach(cls => {
+    cls.assignments.forEach(a => {
+      if (!a.due) return;
+      const parsed = parseDueDate(a.due, year);
+      if (parsed.getFullYear() === year && parsed.getMonth() === month) {
+        dueDaysSet.add(parsed.getDate());
+      }
+    });
+  });
+  events.forEach(e => {
+    const parsed = parseEventDate(e.startTime);
+    if (parsed && parsed.getFullYear() === year && parsed.getMonth() === month) {
+      dueDaysSet.add(parsed.getDate());
+    }
+  });
+
   for (let day = 1; day <= totalDays; day++) {
     const cell = document.createElement('div');
     cell.className = 'day';
@@ -63,6 +96,10 @@ function buildCalendar(year, month) {
 
     if (isSameDate(day, month, year, today)) {
       cell.classList.add('today');
+    }
+
+    if (dueDaysSet.has(day)) {
+      cell.classList.add('has-due');
     }
 
     cell.addEventListener('click', () => {
@@ -122,6 +159,13 @@ function getAssignmentsForDate(classes, year, month, day) {
   return matches;
 }
 
+function getEventsForDate(events, year, month, day) {
+  return events.filter(e => {
+    const parsed = parseEventDate(e.startTime);
+    return parsed && parsed.getFullYear() === year && parsed.getMonth() === month && parsed.getDate() === day;
+  });
+}
+
 let lastOpenedDate = null;
 
 async function openDayPanel(year, month, day) {
@@ -142,34 +186,66 @@ async function openDayPanel(year, month, day) {
   dayBackdrop.classList.add('visible');
 
   try {
-    const classes = await loadClasses();
+    const [classes, events] = await Promise.all([loadClasses(), loadEvents()]);
     const dueToday = getAssignmentsForDate(classes, year, month, day);
+    const eventsToday = getEventsForDate(events, year, month, day);
     const benchmark = getGradeBenchmark();
 
     list.innerHTML = "";
 
-    if (dueToday.length === 0) {
+    if (dueToday.length === 0 && eventsToday.length === 0) {
       list.innerHTML = "<li class='due-date'>Nothing due on this date.</li>";
-      return;
+    } else {
+      dueToday.forEach(a => {
+        const item = document.createElement('li');
+        item.className = 'assignment-row';
+
+        const isGraded = a.grade !== null && a.grade !== undefined;
+        const isLow = isGraded && benchmark !== null && a.grade < benchmark;
+
+        item.innerHTML = `
+          <div class="assignment-meta">
+            <span class="assignment-name">${a.title}</span>
+            <span class="due-date">${a.className}</span>
+          </div>
+          <span class="grade-tag ${isGraded ? 'graded' : 'ungraded'} ${isLow ? 'low' : ''}">${gradeLabel(a.grade)}</span>
+        `;
+
+        list.appendChild(item);
+      });
+
+      eventsToday.forEach(e => {
+        const item = document.createElement('li');
+        item.className = 'assignment-row';
+
+        const parsed = parseEventDate(e.startTime);
+        const timeLabel = parsed
+          ? parsed.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+          : '';
+
+        item.innerHTML = `
+          <div class="assignment-meta">
+            <span class="assignment-name">${e.title}</span>
+            <span class="due-date">${timeLabel}${e.location ? ' \u00b7 ' + e.location : ''}</span>
+          </div>
+          <button class="remove-btn" data-event-id="${e.id}" title="Remove event">&times;</button>
+        `;
+        list.appendChild(item);
+      });
+
+      list.querySelectorAll('[data-event-id]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('Remove this event?')) return;
+          await fetch('/api/events/remove', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: USER_EMAIL, eventId: Number(btn.dataset.eventId) }),
+          });
+          openDayPanel(year, month, day);
+          buildCalendar(currentYear, currentMonth);
+        });
+      });
     }
-
-    dueToday.forEach(a => {
-      const item = document.createElement('li');
-      item.className = 'assignment-row';
-
-      const isGraded = a.grade !== null && a.grade !== undefined;
-      const isLow = isGraded && benchmark !== null && a.grade < benchmark;
-
-      item.innerHTML = `
-        <div class="assignment-meta">
-          <span class="assignment-name">${a.title}</span>
-          <span class="due-date">${a.className}</span>
-        </div>
-        <span class="grade-tag ${isGraded ? 'graded' : 'ungraded'} ${isLow ? 'low' : ''}">${gradeLabel(a.grade)}</span>
-      `;
-
-      list.appendChild(item);
-    });
   } catch (err) {
     console.error('Failed to load assignments for this date:', err);
     list.innerHTML = "<li class='due-date'>Couldn't load assignments. Check the console for details.</li>";
@@ -197,6 +273,32 @@ document.getElementById('day-backdrop').addEventListener('click', () => {
   }
 });
 
+document.getElementById('day-panel-add-event').addEventListener('click', async () => {
+  if (!lastOpenedDate) return;
+
+  const title = prompt("Event title:");
+  if (!title) return;
+
+  const time = prompt("Start time (HH:MM, 24-hour, e.g. 14:00):", "09:00") || "09:00";
+  const endTimeInput = prompt("End time (HH:MM, 24-hour, optional, leave blank to skip):", "") || "";
+  const location = prompt("Location (optional):") || "";
+  const notes = prompt("Notes (optional):") || "";
+
+  const { year, month, day } = lastOpenedDate;
+  const pad = n => String(n).padStart(2, '0');
+  const startTime = `${year}-${pad(month + 1)}-${pad(day)} ${time}:00`;
+  const endTime = endTimeInput ? `${year}-${pad(month + 1)}-${pad(day)} ${endTimeInput}:00` : '';
+
+  await fetch('/api/events/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: USER_EMAIL, title, notes, location, startTime, endTime, classId: '' }),
+  });
+
+  openDayPanel(year, month, day);
+  buildCalendar(currentYear, currentMonth);
+});
+
 const benchmarkInput = document.getElementById('grade-benchmark');
 benchmarkInput.value = getGradeBenchmark() ?? '';
 
@@ -215,7 +317,7 @@ benchmarkInput.addEventListener('change', () => {
   if (lastOpenedDate) {
     openDayPanel(lastOpenedDate.year, lastOpenedDate.month, lastOpenedDate.day);
   }
-  loadUpcomingDeadlines(); 
+  loadUpcomingDeadlines();
 });
 
 function isTodayOrLater(dueDate) {
@@ -233,7 +335,7 @@ async function loadUpcomingDeadlines() {
     const all = [];
     classes.forEach(cls => {
       cls.assignments.forEach(a => {
-        if (a.completed) return; 
+        if (a.completed) return;
         if (!a.due) return;
         all.push({ ...a, className: cls.name, parsedDue: parseDueDate(a.due) });
       });
