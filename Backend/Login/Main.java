@@ -11,6 +11,10 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.BodyPublishers;
 
 public class Main {
 
@@ -123,6 +127,8 @@ public class Main {
         server.createContext("/api/sync/schoology", exchange -> handleSyncSchoology(exchange, db, syncService));
         server.createContext("/api/settings/benchmark/get", exchange -> handleBenchmarkGet(exchange, db));
         server.createContext("/api/settings/benchmark/save", exchange -> handleBenchmarkSave(exchange, db));
+        server.createContext("/api/send-code", exchange -> proxyToFlask(exchange, "/send_code"));
+        server.createContext("/api/verify-code", exchange -> proxyToFlask(exchange, "/verify_code"));
         server.createContext("/", Main::handleStaticFile);
 
         server.setExecutor(null);
@@ -840,6 +846,38 @@ public class Main {
         }
     }
 
+    
+    private static final HttpClient FLASK_CLIENT = HttpClient.newHttpClient();
+
+    private static void proxyToFlask(HttpExchange exchange, String flaskPath) throws IOException {
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 405, "{\"success\":false}");
+            return;
+        }
+
+        String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+
+        try {
+            HttpRequest flaskRequest = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:5001" + flaskPath))
+                    .header("Content-Type", "application/json")
+                    .POST(BodyPublishers.ofString(requestBody))
+                    .build();
+
+            HttpResponse<String> flaskResponse = FLASK_CLIENT.send(flaskRequest, HttpResponse.BodyHandlers.ofString());
+
+            byte[] responseBytes = flaskResponse.body().getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
+            exchange.sendResponseHeaders(flaskResponse.statusCode(), responseBytes.length);
+            try (OutputStream output = exchange.getResponseBody()) {
+                output.write(responseBytes);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendJson(exchange, 502, "{\"success\":false,\"message\":\"Verification server unreachable.\"}");
+        }
+    }
+
     private static void handleStaticFile(HttpExchange exchange) throws IOException {
         if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendText(exchange, 405, "Method not allowed", "text/plain");
@@ -898,6 +936,7 @@ public class Main {
         return "application/octet-stream";
     }
 }
+
 
 
 

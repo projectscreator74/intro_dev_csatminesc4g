@@ -11,8 +11,7 @@ public class EventService {
     private Connection conn;
 
     public EventService() throws SQLException {
-        String url = "jdbc:postgresql://localhost:5432/studystack?options=-c%20TimeZone=UTC";
-        conn = DriverManager.getConnection(url, "postgres", "devpassword123");
+        conn = DbConfig.getConnection();
     }
 
     public JSONArray getEvents(int userId) throws SQLException {

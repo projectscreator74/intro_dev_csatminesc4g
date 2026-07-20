@@ -11,8 +11,7 @@ public class GoalService {
     private Connection conn;
 
     public GoalService() throws SQLException {
-        String url = "jdbc:postgresql://localhost:5432/studystack?options=-c%20TimeZone=UTC";
-        conn = DriverManager.getConnection(url, "postgres", "devpassword123");
+        conn = DbConfig.getConnection();
     }
 
     private int getStatusId(String statusName) throws SQLException {

@@ -12,8 +12,7 @@ public class IntegrationService {
     private Connection conn;
 
     public IntegrationService() throws SQLException {
-        String url = "jdbc:postgresql://localhost:5432/studystack?options=-c%20TimeZone=UTC";
-        conn = DriverManager.getConnection(url, "postgres", "devpassword123");
+        conn = DbConfig.getConnection();
     }
 
     public void saveIntegration(int userId, String provider, String field1, String field2, String field3) throws SQLException {
