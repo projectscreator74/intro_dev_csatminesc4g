@@ -1,12 +1,10 @@
 const loginSection = document.getElementById('login-section');
-const verificationSection = document.getElementById('verification-section');
 const registerStep1Section = document.getElementById('register-step1-section');
 const registerStep2Section = document.getElementById('register-step2-section');
 const registerStep3Section = document.getElementById('register-step3-section');
 
 function hideAllSections() {
   loginSection.style.display = 'none';
-  verificationSection.style.display = 'none';
   registerStep1Section.style.display = 'none';
   registerStep2Section.style.display = 'none';
   registerStep3Section.style.display = 'none';
@@ -24,12 +22,10 @@ document.getElementById('show-login-link').addEventListener('click', (e) => {
   loginSection.style.display = 'block';
 });
 
-// ===== Existing login flow =====
+// ===== Login flow (no email verification) =====
 
 const loginForm = document.getElementById('login-form');
 const loginMessage = document.getElementById('login-message');
-const verifyButton = document.getElementById('verify-button');
-const verificationMessage = document.getElementById('verification-message');
 
 loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -54,43 +50,10 @@ loginForm.addEventListener('submit', async (event) => {
     }
 
     localStorage.setItem('studystackUserEmail', email);
-
-    await fetch('/api/send-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-
-    hideAllSections();
-    verificationSection.style.display = 'block';
+    window.location.href = 'index.html';
 
   } catch (error) {
-    loginMessage.textContent = 'Start the Java server, then try again.';
-  }
-});
-
-verifyButton.addEventListener('click', async () => {
-  const email = document.getElementById('email').value.trim();
-  const code = document.getElementById('verification-code').value.trim();
-
-  verificationMessage.textContent = 'Checking code...';
-
-  try {
-    const response = await fetch('/api/verify-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code }),
-    });
-
-    const result = await response.text();
-
-    if (result === 'success') {
-      window.location.href = 'index.html';
-    } else {
-      verificationMessage.textContent = result;
-    }
-  } catch (error) {
-    verificationMessage.textContent = 'Could not reach verification server.';
+    loginMessage.textContent = 'Could not reach the server. Please try again.';
   }
 });
 
@@ -205,14 +168,7 @@ document.getElementById('reg-google-connect-btn').addEventListener('click', () =
   alert('Google Calendar connection requires OAuth setup - not available yet.');
 });
 
-document.getElementById('register-finish-btn').addEventListener('click', () => {
-  hideAllSections();
-  loginSection.style.display = 'block';
-  document.getElementById('email').value = regEmail;
-  loginMessage.textContent = 'Account created! Please sign in.';
-});
-document.getElementById('verification-code').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    verifyButton.click();
-  }
+document.getElementById('register-finish-btn').addEventListener('click', async () => {
+  localStorage.setItem('studystackUserEmail', regEmail);
+  window.location.href = 'index.html';
 });
